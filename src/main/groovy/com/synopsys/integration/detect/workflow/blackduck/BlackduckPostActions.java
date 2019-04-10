@@ -20,7 +20,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.synopsys.integration.detect.workflow.hub;
+package com.synopsys.integration.detect.workflow.blackduck;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -55,26 +55,15 @@ public class BlackduckPostActions {
     public void perform(BlackduckReportOptions blackduckReportOptions, PolicyCheckOptions policyCheckOptions, CodeLocationWaitData codeLocationWaitData, ProjectVersionWrapper projectVersionWrapper, long timeoutInSeconds)
         throws DetectUserFriendlyException {
         try {
+            final long timeoutInMillisec = 1000L * timeoutInSeconds;
             ProjectView projectView = projectVersionWrapper.getProjectView();
             ProjectVersionView projectVersionView = projectVersionWrapper.getProjectVersionView();
 
             if (policyCheckOptions.shouldPerformPolicyCheck() || blackduckReportOptions.shouldGenerateAnyReport()) {
                 logger.info("Detect must wait for bom tool calculations to finish.");
                 CodeLocationCreationService codeLocationCreationService = blackDuckServicesFactory.createCodeLocationCreationService();
-                List<CodeLocationWaitResult> results = new ArrayList<>();
-                if (codeLocationWaitData.hasBdioResults()) {
-                    CodeLocationWaitResult result = codeLocationCreationService.waitForCodeLocations(codeLocationWaitData.getBdioUploadRange(), codeLocationWaitData.getBdioUploadCodeLocationNames(), timeoutInSeconds);
-                    results.add(result);
-                }
-                if (codeLocationWaitData.hasScanResults()) {
-                    CodeLocationWaitResult result = codeLocationCreationService.waitForCodeLocations(codeLocationWaitData.getSignatureScanRange(), codeLocationWaitData.getSignatureScanCodeLocationNames(), timeoutInSeconds);
-                    results.add(result);
-                }
-                if (codeLocationWaitData.hasBinaryScanResults()) {
-                    CodeLocationWaitResult result = codeLocationCreationService.waitForCodeLocations(codeLocationWaitData.getBinaryScanRange(), codeLocationWaitData.getBinaryScanCodeLocationNames(), timeoutInSeconds);
-                    results.add(result);
-                }
-                for (CodeLocationWaitResult result : results) {
+                if (codeLocationWaitData.getExpectedNotificationCount() > 0) {
+                    CodeLocationWaitResult result = codeLocationCreationService.waitForCodeLocations(codeLocationWaitData.getNotificationRange(), codeLocationWaitData.getCodeLocationNames(), codeLocationWaitData.getExpectedNotificationCount(), timeoutInSeconds);
                     if (result.getStatus() == CodeLocationWaitResult.Status.PARTIAL) {
                         throw new DetectUserFriendlyException(result.getErrorMessage().orElse("Timed out waiting for code locations to finish on the Black Duck server."), ExitCodeType.FAILURE_TIMEOUT);
                     }
@@ -88,7 +77,7 @@ public class BlackduckPostActions {
             }
 
             if (blackduckReportOptions.shouldGenerateAnyReport()) {
-                ReportService reportService = blackDuckServicesFactory.createReportService(timeoutInSeconds);
+                ReportService reportService = blackDuckServicesFactory.createReportService(timeoutInMillisec);
                 if (blackduckReportOptions.shouldGenerateRiskReport()) {
                     logger.info("Creating risk report pdf");
                     File reportDirectory = new File(blackduckReportOptions.getRiskReportPdfPath());

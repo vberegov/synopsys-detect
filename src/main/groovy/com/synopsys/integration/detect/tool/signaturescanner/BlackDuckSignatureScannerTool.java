@@ -66,9 +66,9 @@ public class BlackDuckSignatureScannerTool {
         ConnectionManager connectionManager = detectContext.getBean(ConnectionManager.class);
         DirectoryManager directoryManager = detectContext.getBean(DirectoryManager.class);
 
-        Optional<BlackDuckServerConfig> hubServerConfig = Optional.empty();
+        Optional<BlackDuckServerConfig> blackDuckServerConfig = Optional.empty();
         if (blackDuckRunData.isOnline() && blackDuckRunData.getBlackDuckServerConfig().isPresent()) {
-            hubServerConfig = blackDuckRunData.getBlackDuckServerConfig();
+            blackDuckServerConfig = blackDuckRunData.getBlackDuckServerConfig();
         }
 
         logger.info("Will run the signature scanner tool.");
@@ -87,15 +87,15 @@ public class BlackDuckSignatureScannerTool {
         final String userProvidedScannerInstallUrl = detectConfiguration.getProperty(DetectProperty.DETECT_BLACKDUCK_SIGNATURE_SCANNER_HOST_URL, PropertyAuthority.None);
 
         BlackDuckSignatureScannerOptions blackDuckSignatureScannerOptions = detectConfigurationFactory.createBlackDuckSignatureScannerOptions();
-        final ExecutorService executorService = Executors.newFixedThreadPool(blackDuckSignatureScannerOptions.getParrallelProcessors());
+        final ExecutorService executorService = Executors.newFixedThreadPool(blackDuckSignatureScannerOptions.getParallelProcessors());
         IntEnvironmentVariables intEnvironmentVariables = new IntEnvironmentVariables();
 
         ScanBatchRunnerFactory scanBatchRunnerFactory = new ScanBatchRunnerFactory(intEnvironmentVariables, executorService);
         ScanBatchRunner scanBatchRunner;
         File installDirectory = directoryManager.getPermanentDirectory();
-        if (hubServerConfig.isPresent() && StringUtils.isBlank(userProvidedScannerInstallUrl) && StringUtils.isBlank(localScannerInstallPath)) {
-            logger.debug("Signature scanner will use the hub server to download/update the scanner - this is the most likely situation.");
-            scanBatchRunner = scanBatchRunnerFactory.withHubInstall(hubServerConfig.get());
+        if (blackDuckServerConfig.isPresent() && StringUtils.isBlank(userProvidedScannerInstallUrl) && StringUtils.isBlank(localScannerInstallPath)) {
+            logger.debug("Signature scanner will use the Black Duck server to download/update the scanner - this is the most likely situation.");
+            scanBatchRunner = scanBatchRunnerFactory.withInstall(blackDuckServerConfig.get());
         } else {
             if (StringUtils.isNotBlank(userProvidedScannerInstallUrl)) {
                 logger.debug("Signature scanner will use the provided url to download/update the scanner.");
@@ -114,10 +114,10 @@ public class BlackDuckSignatureScannerTool {
         logger.debug("Determined install directory: " + installDirectory.getAbsolutePath());
 
         try {
-            if (hubServerConfig.isPresent()) {
+            if (blackDuckServerConfig.isPresent()) {
                 logger.debug("Signature scan is online.");
                 CodeLocationCreationService codeLocationCreationService = blackDuckRunData.getBlackDuckServicesFactory().get().createCodeLocationCreationService();
-                OnlineBlackDuckSignatureScanner blackDuckSignatureScanner = detectContext.getBean(OnlineBlackDuckSignatureScanner.class, signatureScannerOptions, scanBatchRunner, codeLocationCreationService, hubServerConfig.get());
+                OnlineBlackDuckSignatureScanner blackDuckSignatureScanner = detectContext.getBean(OnlineBlackDuckSignatureScanner.class, signatureScannerOptions, scanBatchRunner, codeLocationCreationService, blackDuckServerConfig.get());
                 CodeLocationCreationData<ScanBatchOutput> codeLocationCreationData = blackDuckSignatureScanner.performOnlineScan(projectNameVersion, installDirectory, dockerTar.orElse(null));
                 return SignatureScannerToolResult.createOnlineResult(codeLocationCreationData);
             } else {
