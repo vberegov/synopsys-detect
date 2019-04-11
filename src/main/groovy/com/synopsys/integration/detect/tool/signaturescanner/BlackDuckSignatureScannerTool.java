@@ -127,7 +127,7 @@ public class BlackDuckSignatureScannerTool {
                 return SignatureScannerToolResult.createOfflineResult(scanBatchOutput);
             }
         } catch (IOException | InterruptedException | IntegrationException e) {
-            logger.error(String.format("Signature scan failed: %s", e.getMessage());
+            logger.error(String.format("Signature scan failed: %s", e.getMessage()));
             logger.debug("Signature scan error", e);
             return SignatureScannerToolResult.createFailureResult();
         } finally {

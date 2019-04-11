@@ -3,6 +3,7 @@ package com.synopsys.integration.detectable.detectables.clang.unit;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,6 +41,8 @@ public class TEMPCMakeTest {
         while (fileIterator.hasNext()) {
             final File linkFile = fileIterator.next();
             if (linkFile.isFile()) {
+                final File linkFileDir = linkFile.getParentFile();
+                System.out.printf("Dir: %s\n", linkFileDir.getAbsolutePath());
                 final String commandString = FileUtils.readFileToString(linkFile, StandardCharsets.UTF_8);
 //                System.out.printf("File: %s: %s\n", linkFile.getAbsolutePath(), commandString);
                 final List<String> cmdTokens = parser.parseCommandString(commandString, new HashMap<>(0));
@@ -50,7 +53,9 @@ public class TEMPCMakeTest {
                     int index = 0;
                     for (final String cmdToken : cmdTokens) {
                         if ((index > 0) && (isLinkedFilePathGcc(cmdToken))) {
-                                                    System.out.printf("Linked file: '%s'\n", cmdToken);
+                            System.out.printf("Linked file: '%s:%s'\n", linkFileDir.getCanonicalPath(), cmdToken);
+                            final File resolvedLinkedFile = Paths.get(linkFileDir.getCanonicalPath(), cmdToken).toFile();
+                            System.out.printf("Resolved linked file: '%s'\n", resolvedLinkedFile.getCanonicalPath());
                         }
                         index++;
                     }
