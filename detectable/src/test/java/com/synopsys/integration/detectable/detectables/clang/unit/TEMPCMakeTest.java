@@ -26,13 +26,17 @@ import com.synopsys.integration.detectable.detectables.clang.compilecommand.Comp
 public class TEMPCMakeTest {
 
     @Test
-    public void test() throws IOException {
+    public void testAr() throws IOException {
+        final File buildDir = new File("/Users/billings/Documents/projects/detect/cmake/linkfiles");
+        final File sourceDir = new File("/Users/billings/Documents/projects/detect/cmake/linkfiles");
+        final File dir = new File("/Users/billings/Documents/projects/detect/cmake/linkfiles");
+
 
         final Set<String> commands = new HashSet<>();
 
         final CompileCommandParser parser = new CompileCommandParser();
 
-        final File dir = new File("/Users/billings/Documents/projects/detect/cmake/linkfiles");
+
         final List<String> names = new ArrayList<>(1);
         names.add("link.txt");
         final NameFileFilter filenameFilter = new NameFileFilter(names);
