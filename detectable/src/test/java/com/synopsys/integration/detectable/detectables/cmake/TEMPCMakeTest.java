@@ -1,4 +1,4 @@
-package com.synopsys.integration.detectable.detectables.clang.unit;
+package com.synopsys.integration.detectable.detectables.cmake;
 
 import java.io.File;
 import java.io.IOException;
