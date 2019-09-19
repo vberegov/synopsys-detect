@@ -7,6 +7,7 @@ import com.synopsys.integration.blackduck.service.BlackDuckServicesFactory
 import com.synopsys.integration.blackduck.service.ProjectService
 import com.synopsys.integration.blackduck.service.model.ProjectVersionWrapper
 import com.synopsys.integration.log.PrintStreamIntLogger
+import de.undercouch.gradle.tasks.download.Download
 
 buildscript {
     ext {
@@ -29,6 +30,8 @@ buildscript {
 
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.31' apply false
+    // https://github.com/michel-kraemer/gradle-download-task
+    id "de.undercouch.download" version "4.0.0"
 }
 
 group = 'com.synopsys.integration'
@@ -36,8 +39,10 @@ version = '6.0.0-SNAPSHOT'
 
 apply plugin: 'com.blackducksoftware.integration.solution'
 apply plugin: 'org.springframework.boot'
+apply plugin: 'de.undercouch.download'
 apply from: 'artifactory-properties.gradle'
 apply from: 'docs.gradle'
+apply from: 'bundle.gradle'
 
 def createArtifactName() {
     return "${buildDir}/libs/${project.name}-${version}.jar"
