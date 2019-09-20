@@ -23,21 +23,16 @@
 package com.synopsys.integration.detectable.detectables.bazel.parse;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import com.synopsys.integration.detectable.detectable.executable.ExecutableOutput;
 import com.synopsys.integration.detectable.detectable.executable.ExecutableRunner;
@@ -52,20 +47,20 @@ public class BazelExternalIdGenerator {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ExecutableRunner executableRunner;
     private final String bazelExe;
-    private final BazelQueryXmlOutputParser parser;
-    private final ArtifactStringsExtractor artifactStringsExtractor;
+    private final ArtifactStringsExtractor artifactStringsExtractorXml;
+    private final ArtifactStringsExtractor artifactStringsExtractorTextProto;
     private final File workspaceDir;
     private final String bazelTarget;
     private final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated = new HashMap<>();
 
     public BazelExternalIdGenerator(final ExecutableRunner executableRunner, final String bazelExe,
-        final BazelQueryXmlOutputParser parser,
-        final ArtifactStringsExtractor artifactStringsExtractor,
+        final ArtifactStringsExtractor artifactStringsExtractorXml,
+        final ArtifactStringsExtractor artifactStringsExtractorTextProto,
         final File workspaceDir, final String bazelTarget) {
         this.executableRunner = executableRunner;
         this.bazelExe = bazelExe;
-        this.parser = parser;
-        this.artifactStringsExtractor = artifactStringsExtractor;
+        this.artifactStringsExtractorXml = artifactStringsExtractorXml;
+        this.artifactStringsExtractorTextProto = artifactStringsExtractorTextProto;
         this.workspaceDir = workspaceDir;
         this.bazelTarget = bazelTarget;
     }
@@ -81,7 +76,7 @@ public class BazelExternalIdGenerator {
             String bazelExternalId = transformRawDependencyToBazelExternalId(fullRule, rawDependency);
 
             // TODO this assumes XML; needs to handle either an XML rule, or a textproto rule
-            final Optional<List<String>> artifactStrings = artifactStringsExtractor.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
+            final Optional<List<String>> artifactStrings = artifactStringsExtractorXml.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
             if (!artifactStrings.isPresent()) {
                 return projectExternalIds;
             }

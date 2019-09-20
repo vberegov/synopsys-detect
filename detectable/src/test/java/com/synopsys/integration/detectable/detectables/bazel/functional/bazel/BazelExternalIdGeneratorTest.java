@@ -57,7 +57,7 @@ public class BazelExternalIdGeneratorTest {
             .thenReturn(bazelArtifactStringsCommonsIO);
         Mockito.when(artifactStringsExtractor.extractArtifactStrings(Mockito.any(BazelExternalIdExtractionFullRule.class), Mockito.eq("//external:com_google_guava_guava"), Mockito.anyMap()))
             .thenReturn(bazelArtifactStringsGuava);
-        BazelExternalIdGenerator generator = new BazelExternalIdGenerator(executableRunner, bazelExe, parser, artifactStringsExtractor, workspaceDir, bazelTarget);
+        BazelExternalIdGenerator generator = new BazelExternalIdGenerator(executableRunner, bazelExe, artifactStringsExtractor, artifactStringsExtractor, workspaceDir, bazelTarget);
 
         BazelExternalIdExtractionSimpleRule simpleRule = new BazelExternalIdExtractionSimpleRule("@.*:jar", "maven_jar",
             "artifact", ":");

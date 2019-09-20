@@ -42,6 +42,7 @@ import com.synopsys.integration.detectable.detectables.bazel.parse.BazelCodeLoca
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelExternalIdGenerator;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelQueryXmlOutputParser;
 import com.synopsys.integration.detectable.detectables.bazel.parse.RuleConverter;
+import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractor;
 import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractorXml;
 
 public class BazelExtractor {
@@ -76,8 +77,10 @@ public class BazelExtractor {
                     logger.debug(String.format("Using default rules:\n%s", bazelExternalIdExtractionFullRuleJsonProcessor.toJson(fullRules)));
                 }
             }
-            BazelExternalIdGenerator externalIdGenerator = new BazelExternalIdGenerator(executableRunner, bazelExe.toString(), parser,
-                new ArtifactStringsExtractorXml(executableRunner, bazelExe, parser, workspaceDir, bazelTarget),
+            final ArtifactStringsExtractor artifactStringsExtractorXml = new ArtifactStringsExtractorXml(executableRunner, bazelExe, parser, workspaceDir, bazelTarget);
+            final BazelExternalIdGenerator externalIdGenerator = new BazelExternalIdGenerator(executableRunner, bazelExe.toString(),
+                artifactStringsExtractorXml,
+                null,
                 workspaceDir, bazelTarget);
             fullRules.stream()
                 .map(externalIdGenerator::generate)
