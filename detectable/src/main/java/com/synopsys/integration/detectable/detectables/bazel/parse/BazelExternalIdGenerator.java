@@ -34,6 +34,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -132,8 +133,27 @@ public class BazelExternalIdGenerator {
             logger.debug("Bazel targetDependenciesQuery found no dependencies");
             return Optional.empty();
         }
-        final String[] rawDependencies = targetDependenciesQueryOutput.split("\\s+");
-        return Optional.of(rawDependencies);
+        final String[] rawDependencies = targetDependenciesQueryOutput.split("\\r?\\n");
+        final String[] rawDependenciesCleaned = cleanRawDependencies(rawDependencies);
+        return Optional.of(rawDependenciesCleaned);
+    }
+
+    @NotNull
+    private String[] cleanRawDependencies(final String[] rawDependencies) {
+        final String[] rawDependenciesCleaned = new String[rawDependencies.length];
+        int rawDependencyIndex=0;
+        for (final String rawDependency : rawDependencies) {
+            final int indexOfTrailingJunk = rawDependency.indexOf(" (");
+            final String rawDependencyCleaned;
+            if (indexOfTrailingJunk >= 0) {
+                rawDependencyCleaned = rawDependency.substring(0, indexOfTrailingJunk);
+            } else {
+                rawDependencyCleaned = rawDependency;
+            }
+            logger.trace(String.format("Cleaned raw dependency '%s' to '%s'", rawDependency, rawDependencyCleaned));
+            rawDependenciesCleaned[rawDependencyIndex++] = rawDependency;
+        }
+        return rawDependenciesCleaned;
     }
 
     private List<String> deriveDependencyListQueryArgs(final BazelExternalIdExtractionFullRule xPathRule) {
@@ -164,7 +184,7 @@ public class BazelExternalIdGenerator {
         }
         final int dependencyDetailsXmlQueryReturnCode = dependencyDetailsXmlQueryResults.getReturnCode();
         final String dependencyDetailsXmlQueryOutput = dependencyDetailsXmlQueryResults.getStandardOutput();
-        logger.debug(String.format("Bazel targetDependenciesQuery returned %d; output: %s", dependencyDetailsXmlQueryReturnCode, dependencyDetailsXmlQueryOutput));
+        logger.debug(String.format("Bazel targetDependencieDetailsQuery returned %d; output: %s", dependencyDetailsXmlQueryReturnCode, dependencyDetailsXmlQueryOutput));
 
         final String xml = dependencyDetailsXmlQueryResults.getStandardOutput();
         logger.debug(String.format("Bazel query returned %d; output: %s", dependencyDetailsXmlQueryReturnCode, xml));
