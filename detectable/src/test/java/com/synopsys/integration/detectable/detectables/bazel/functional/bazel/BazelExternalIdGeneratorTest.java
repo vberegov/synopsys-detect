@@ -3,7 +3,9 @@ package com.synopsys.integration.detectable.detectables.bazel.functional.bazel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -19,6 +21,8 @@ import com.synopsys.integration.detectable.detectables.bazel.parse.BazelQueryXml
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelVariableSubstitutor;
 import com.synopsys.integration.detectable.detectables.bazel.parse.RuleConverter;
 import com.synopsys.integration.detectable.detectables.bazel.parse.XPathParser;
+import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractor;
+import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractorXml;
 
 public class BazelExternalIdGeneratorTest {
     private static final String commonsIoXml = "<?xml version=\"1.1\" encoding=\"UTF-8\" standalone=\"no\"?> "
@@ -46,7 +50,14 @@ public class BazelExternalIdGeneratorTest {
         final File workspaceDir = new File("notUsed");
         final String bazelTarget = "//testproject:ProjectRunner";
 
-        BazelExternalIdGenerator generator = new BazelExternalIdGenerator(executableRunner, bazelExe, parser, workspaceDir, bazelTarget);
+        final ArtifactStringsExtractor artifactStringsExtractor = Mockito.mock(ArtifactStringsExtractor.class);
+        Optional<List<String>> bazelArtifactStringsCommonsIO = Optional.of(Arrays.asList("org.apache.commons:commons-io:1.3.2"));
+        Optional<List<String>> bazelArtifactStringsGuava = Optional.of(Arrays.asList("com.google.guava:guava:18.0"));
+        Mockito.when(artifactStringsExtractor.extractArtifactStrings(Mockito.any(BazelExternalIdExtractionFullRule.class), Mockito.eq("//external:org_apache_commons_commons_io"), Mockito.anyMap()))
+            .thenReturn(bazelArtifactStringsCommonsIO);
+        Mockito.when(artifactStringsExtractor.extractArtifactStrings(Mockito.any(BazelExternalIdExtractionFullRule.class), Mockito.eq("//external:com_google_guava_guava"), Mockito.anyMap()))
+            .thenReturn(bazelArtifactStringsGuava);
+        BazelExternalIdGenerator generator = new BazelExternalIdGenerator(executableRunner, bazelExe, parser, artifactStringsExtractor, workspaceDir, bazelTarget);
 
         BazelExternalIdExtractionSimpleRule simpleRule = new BazelExternalIdExtractionSimpleRule("@.*:jar", "maven_jar",
             "artifact", ":");

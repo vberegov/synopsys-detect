@@ -45,6 +45,7 @@ import com.synopsys.integration.detectable.detectable.executable.ExecutableRunne
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalId;
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRule;
 import com.synopsys.integration.detectable.detectables.bazel.model.SearchReplacePattern;
+import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractor;
 import com.synopsys.integration.exception.IntegrationException;
 
 public class BazelExternalIdGenerator {
@@ -52,39 +53,40 @@ public class BazelExternalIdGenerator {
     private final ExecutableRunner executableRunner;
     private final String bazelExe;
     private final BazelQueryXmlOutputParser parser;
+    private final ArtifactStringsExtractor artifactStringsExtractor;
     private final File workspaceDir;
     private final String bazelTarget;
     private final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated = new HashMap<>();
 
     public BazelExternalIdGenerator(final ExecutableRunner executableRunner, final String bazelExe,
-        final BazelQueryXmlOutputParser parser, final File workspaceDir, final String bazelTarget) {
+        final BazelQueryXmlOutputParser parser,
+        final ArtifactStringsExtractor artifactStringsExtractor,
+        final File workspaceDir, final String bazelTarget) {
         this.executableRunner = executableRunner;
         this.bazelExe = bazelExe;
         this.parser = parser;
+        this.artifactStringsExtractor = artifactStringsExtractor;
         this.workspaceDir = workspaceDir;
         this.bazelTarget = bazelTarget;
     }
 
-    public List<BazelExternalId> generate(final BazelExternalIdExtractionFullRule xPathRule) {
+    public List<BazelExternalId> generate(final BazelExternalIdExtractionFullRule fullRule) {
         final List<BazelExternalId> projectExternalIds = new ArrayList<>();
-        final List<String> dependencyListQueryArgs = deriveDependencyListQueryArgs(xPathRule);
-        Optional<String[]> rawDependencies = executeDependencyListQuery(xPathRule, dependencyListQueryArgs);
+        final List<String> dependencyListQueryArgs = deriveDependencyListQueryArgs(fullRule);
+        Optional<String[]> rawDependencies = executeDependencyListQuery(fullRule, dependencyListQueryArgs);
         if (!rawDependencies.isPresent()) {
             return projectExternalIds;
         }
         for (final String rawDependency : rawDependencies.get()) {
-            String bazelExternalId = transformRawDependencyToBazelExternalId(xPathRule, rawDependency);
-            final List<String> dependencyDetailsQueryArgs = deriveDependencyDetailsQueryArgs(xPathRule, bazelExternalId);
-            final Optional<String> xml = executeDependencyDetailsQuery(xPathRule, dependencyDetailsQueryArgs);
-            if (!xml.isPresent()) {
-                return projectExternalIds;
-            }
-            final Optional<List<String>> artifactStrings = parseArtifactStringsFromXml(xPathRule, xml.get());
+            String bazelExternalId = transformRawDependencyToBazelExternalId(fullRule, rawDependency);
+
+            // TODO this assumes XML; needs to handle either an XML rule, or a textproto rule
+            final Optional<List<String>> artifactStrings = artifactStringsExtractor.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
             if (!artifactStrings.isPresent()) {
                 return projectExternalIds;
             }
             for (String artifactString : artifactStrings.get()) {
-                BazelExternalId externalId = BazelExternalId.fromBazelArtifactString(artifactString, xPathRule.getArtifactStringSeparatorRegex());
+                BazelExternalId externalId = BazelExternalId.fromBazelArtifactString(artifactString, fullRule.getArtifactStringSeparatorRegex());
                 projectExternalIds.add(externalId);
             }
         }
@@ -109,13 +111,13 @@ public class BazelExternalIdGenerator {
         return sb.toString();
     }
 
-    private Optional<String[]> executeDependencyListQuery(final BazelExternalIdExtractionFullRule xPathRule, final List<String> dependencyListQueryArgs) {
+    private Optional<String[]> executeDependencyListQuery(final BazelExternalIdExtractionFullRule fullRule, final List<String> dependencyListQueryArgs) {
         ExecutableOutput targetDependenciesQueryResults = null;
         try {
             targetDependenciesQueryResults = executableRunner.execute(workspaceDir, bazelExe, dependencyListQueryArgs);
         } catch (ExecutableRunnerException e) {
             logger.debug(String.format("Error executing bazel with args: %s: %s", dependencyListQueryArgs, e.getMessage()));
-            exceptionsGenerated.put(xPathRule, e);
+            exceptionsGenerated.put(fullRule, e);
             return Optional.empty();
         }
         final int targetDependenciesQueryReturnCode = targetDependenciesQueryResults.getReturnCode();
@@ -124,7 +126,7 @@ public class BazelExternalIdGenerator {
                 targetDependenciesQueryReturnCode,
                 targetDependenciesQueryResults.getErrorOutput());
             logger.debug(msg);
-            exceptionsGenerated.put(xPathRule, new IntegrationException(msg));
+            exceptionsGenerated.put(fullRule, new IntegrationException(msg));
             return Optional.empty();
         }
         final String targetDependenciesQueryOutput = targetDependenciesQueryResults.getStandardOutput();
@@ -156,50 +158,15 @@ public class BazelExternalIdGenerator {
         return rawDependenciesCleaned;
     }
 
-    private List<String> deriveDependencyListQueryArgs(final BazelExternalIdExtractionFullRule xPathRule) {
+    private List<String> deriveDependencyListQueryArgs(final BazelExternalIdExtractionFullRule fullRule) {
         final BazelVariableSubstitutor targetOnlyVariableSubstitutor = new BazelVariableSubstitutor(bazelTarget);
-        return targetOnlyVariableSubstitutor.substitute(xPathRule.getTargetDependenciesQueryBazelCmdArguments());
+        return targetOnlyVariableSubstitutor.substitute(fullRule.getTargetDependenciesQueryBazelCmdArguments());
     }
 
-    private Optional<List<String>> parseArtifactStringsFromXml(final BazelExternalIdExtractionFullRule xPathRule, final String xml) {
-        final List<String> ruleArtifactStrings;
-        try {
-            ruleArtifactStrings = parser.parseStringValuesWithXPath(xml, xPathRule.getXPathQuery(), xPathRule.getRuleElementValueAttrName());
-        } catch (IOException | SAXException | ParserConfigurationException | XPathExpressionException e) {
-            logger.debug(String.format("Error parsing bazel query output with: %s: %s", xPathRule.getXPathQuery(), e.getMessage()));
-            exceptionsGenerated.put(xPathRule, e);
-            return Optional.empty();
-        }
-        return Optional.of(ruleArtifactStrings);
-    }
-
-    private Optional<String> executeDependencyDetailsQuery(final BazelExternalIdExtractionFullRule xPathRule, final List<String> dependencyDetailsQueryArgs) {
-        ExecutableOutput dependencyDetailsXmlQueryResults = null;
-        try {
-            dependencyDetailsXmlQueryResults = executableRunner.execute(workspaceDir, bazelExe, dependencyDetailsQueryArgs);
-        } catch (ExecutableRunnerException e) {
-            logger.debug(String.format("Error executing bazel with args: %s: %s", xPathRule.getDependencyDetailsXmlQueryBazelCmdArguments(), e.getMessage()));
-            exceptionsGenerated.put(xPathRule, e);
-            return Optional.empty();
-        }
-        final int dependencyDetailsXmlQueryReturnCode = dependencyDetailsXmlQueryResults.getReturnCode();
-        final String dependencyDetailsXmlQueryOutput = dependencyDetailsXmlQueryResults.getStandardOutput();
-        logger.debug(String.format("Bazel targetDependencieDetailsQuery returned %d; output: %s", dependencyDetailsXmlQueryReturnCode, dependencyDetailsXmlQueryOutput));
-
-        final String xml = dependencyDetailsXmlQueryResults.getStandardOutput();
-        logger.debug(String.format("Bazel query returned %d; output: %s", dependencyDetailsXmlQueryReturnCode, xml));
-        return Optional.of(xml);
-    }
-
-    private List<String> deriveDependencyDetailsQueryArgs(final BazelExternalIdExtractionFullRule xPathRule, final String bazelExternalId) {
-        final BazelVariableSubstitutor dependencyVariableSubstitutor = new BazelVariableSubstitutor(bazelTarget, bazelExternalId);
-        return dependencyVariableSubstitutor.substitute(xPathRule.getDependencyDetailsXmlQueryBazelCmdArguments());
-    }
-
-    private String transformRawDependencyToBazelExternalId(final BazelExternalIdExtractionFullRule xPathRule, final String rawDependency) {
+    private String transformRawDependencyToBazelExternalId(final BazelExternalIdExtractionFullRule fullRule, final String rawDependency) {
         logger.debug(String.format("Processing rawDependency: %s", rawDependency));
         String bazelExternalId = rawDependency;
-        for (SearchReplacePattern pattern : xPathRule.getDependencyToBazelExternalIdTransforms()) {
+        for (SearchReplacePattern pattern : fullRule.getDependencyToBazelExternalIdTransforms()) {
             logger.debug(String.format("Replacing %s with %s", pattern.getSearchRegex(), pattern.getReplacementString()));
             bazelExternalId = bazelExternalId.replaceAll(pattern.getSearchRegex(), pattern.getReplacementString());
         }

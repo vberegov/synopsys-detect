@@ -31,10 +31,25 @@ public class BazelExternalIdExtractionFullRule extends Stringable {
     private final List<String> targetDependenciesQueryBazelCmdArguments;
     // The search/replace transforms to run on the output of each targetDependenciesQuery to convert each into a bazel external ID
     private final List<SearchReplacePattern> dependencyToBazelExternalIdTransforms;
+
+    //// Only one of the following two sets of fields should be populated.
+
+    //// Set 1: Populate for detail queries producing XML:
+
     // The args for the bazel query to get a dependency's details
     private final List<String> dependencyDetailsXmlQueryBazelCmdArguments;
     private final String xPathQuery;
     private final String ruleElementValueAttrName;
+
+    //// Set 2: Populate for detail queries producing textproto:
+
+    private final List<String> dependencyDetailsTextProtoQueryBazelCmdArguments;
+    private final String pathToAttributeObjectList;
+    private final String gavObjectName;
+    private final String gavFieldName;
+
+    //// Always populate the remaining field:
+
     // The separator between group, artifact, version in the bazel query output xml artifact value
     // Example: ":"
     private final String artifactStringSeparatorRegex;
@@ -42,12 +57,25 @@ public class BazelExternalIdExtractionFullRule extends Stringable {
     // Normal use case is to use RuleConverter.simpleToFull() to construct BazelExternalIdExtractionFullRule, not this ctor
     public BazelExternalIdExtractionFullRule(final List<String> targetDependenciesQueryBazelCmdArguments, final List<SearchReplacePattern> dependencyToBazelExternalIdTransforms,
         final List<String> dependencyDetailsXmlQueryBazelCmdArguments,
-        final String xPathQuery, final String ruleElementValueAttrName, final String artifactStringSeparatorRegex) {
+        final String xPathQuery, final String ruleElementValueAttrName,
+
+        final List<String> dependencyDetailsTextProtoQueryBazelCmdArguments,
+        final String pathToAttributeObjectList,
+        final String gavObjectName,
+        final String gavFieldName,
+
+        final String artifactStringSeparatorRegex) {
         this.targetDependenciesQueryBazelCmdArguments = targetDependenciesQueryBazelCmdArguments;
         this.dependencyToBazelExternalIdTransforms = dependencyToBazelExternalIdTransforms;
         this.dependencyDetailsXmlQueryBazelCmdArguments = dependencyDetailsXmlQueryBazelCmdArguments;
         this.xPathQuery = xPathQuery;
         this.ruleElementValueAttrName = ruleElementValueAttrName;
+
+        this.dependencyDetailsTextProtoQueryBazelCmdArguments = dependencyDetailsTextProtoQueryBazelCmdArguments;
+        this.pathToAttributeObjectList = pathToAttributeObjectList;
+        this.gavObjectName = gavObjectName;
+        this.gavFieldName = gavFieldName;
+
         this.artifactStringSeparatorRegex = artifactStringSeparatorRegex;
     }
 
@@ -69,6 +97,22 @@ public class BazelExternalIdExtractionFullRule extends Stringable {
 
     public String getRuleElementValueAttrName() {
         return ruleElementValueAttrName;
+    }
+
+    public List<String> getDependencyDetailsTextProtoQueryBazelCmdArguments() {
+        return dependencyDetailsTextProtoQueryBazelCmdArguments;
+    }
+
+    public String getPathToAttributeObjectList() {
+        return pathToAttributeObjectList;
+    }
+
+    public String getGavObjectName() {
+        return gavObjectName;
+    }
+
+    public String getGavFieldName() {
+        return gavFieldName;
     }
 
     public String getArtifactStringSeparatorRegex() {

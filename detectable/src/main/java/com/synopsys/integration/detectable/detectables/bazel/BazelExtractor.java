@@ -42,6 +42,7 @@ import com.synopsys.integration.detectable.detectables.bazel.parse.BazelCodeLoca
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelExternalIdGenerator;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelQueryXmlOutputParser;
 import com.synopsys.integration.detectable.detectables.bazel.parse.RuleConverter;
+import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractorXml;
 
 public class BazelExtractor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -65,7 +66,7 @@ public class BazelExtractor {
             codeLocationGenerator.setWorkspaceDir(workspaceDir);
             List<BazelExternalIdExtractionFullRule> fullRules;
             if (StringUtils.isNotBlank(fullRulesPath)) {
-                fullRules = loadXPathRulesFromFile(fullRulesPath);
+                fullRules = loadFullRulesFromFile(fullRulesPath);
                 logger.debug(String.format("Read %d rule(s) from %s", fullRules.size(), fullRulesPath));
             } else {
                 BazelExternalIdExtractionSimpleRules simpleRules = new BazelExternalIdExtractionSimpleRules(fullRulesPath);
@@ -75,7 +76,9 @@ public class BazelExtractor {
                     logger.debug(String.format("Using default rules:\n%s", bazelExternalIdExtractionFullRuleJsonProcessor.toJson(fullRules)));
                 }
             }
-            BazelExternalIdGenerator externalIdGenerator = new BazelExternalIdGenerator(executableRunner, bazelExe.toString(), parser, workspaceDir, bazelTarget);
+            BazelExternalIdGenerator externalIdGenerator = new BazelExternalIdGenerator(executableRunner, bazelExe.toString(), parser,
+                new ArtifactStringsExtractorXml(executableRunner, bazelExe, parser, workspaceDir, bazelTarget),
+                workspaceDir, bazelTarget);
             fullRules.stream()
                 .map(externalIdGenerator::generate)
                 .flatMap(Collection::stream)
@@ -105,8 +108,8 @@ public class BazelExtractor {
         return projectName;
     }
 
-    private List<BazelExternalIdExtractionFullRule> loadXPathRulesFromFile(final String xPathRulesJsonFilePath) throws IOException {
-        final File jsonFile = new File(xPathRulesJsonFilePath);
+    private List<BazelExternalIdExtractionFullRule> loadFullRulesFromFile(final String fullRulesJsonFilePath) throws IOException {
+        final File jsonFile = new File(fullRulesJsonFilePath);
         List<BazelExternalIdExtractionFullRule> loadedRules = bazelExternalIdExtractionFullRuleJsonProcessor.load(jsonFile);
         return loadedRules;
     }

@@ -63,6 +63,10 @@ public class RuleConverter {
         dependencyToBazelExternalIdTransforms,
         dependencyDetailsXmlQueryBazelCmdArguments,
         xPathQuery, ruleElementValueAttrName,
+        null,
+        null,
+        null,
+        null,
         artifactStringSeparatorRegex);
         return fullRule;
     }

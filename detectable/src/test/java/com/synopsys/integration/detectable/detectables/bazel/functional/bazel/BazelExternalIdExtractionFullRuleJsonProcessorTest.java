@@ -38,7 +38,9 @@ public class BazelExternalIdExtractionFullRuleJsonProcessorTest {
             Arrays.asList("targetDependenciesQueryBazelCmdArgument1", "targetDependenciesQueryBazelCmdArgument2"),
             searchReplacePatterns,
         Arrays.asList("dependencyDetailsXmlQueryBazelCmdArgument1", "dependencyDetailsXmlQueryBazelCmdArgument2"),
-        "testXPathQuery", "testRuleElementValueAttrName", "testArtifactStringSeparatorRegex");
+        "testXPathQuery", "testRuleElementValueAttrName",
+            null, null, null, null,
+            "testArtifactStringSeparatorRegex");
 
         List<BazelExternalIdExtractionFullRule> origRules = new ArrayList<>();
         origRules.add(origRule);
