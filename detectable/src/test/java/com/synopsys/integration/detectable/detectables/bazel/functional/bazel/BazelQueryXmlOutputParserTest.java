@@ -3,19 +3,16 @@ package com.synopsys.integration.detectable.detectables.bazel.functional.bazel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import com.synopsys.integration.detectable.detectables.bazel.parse.BazelQueryXmlOutputParser;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.BazelQueryXmlOutputParser;
 import com.synopsys.integration.detectable.detectables.bazel.parse.XPathParser;
 import com.synopsys.integration.detectable.util.FunctionalTestFiles;
 

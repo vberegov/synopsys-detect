@@ -17,12 +17,11 @@ import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternal
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRule;
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionSimpleRule;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelExternalIdGenerator;
-import com.synopsys.integration.detectable.detectables.bazel.parse.BazelQueryXmlOutputParser;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.BazelQueryXmlOutputParser;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelVariableSubstitutor;
 import com.synopsys.integration.detectable.detectables.bazel.parse.RuleConverter;
 import com.synopsys.integration.detectable.detectables.bazel.parse.XPathParser;
-import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractor;
-import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractorXml;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractor;
 
 public class BazelExternalIdGeneratorTest {
     private static final String commonsIoXml = "<?xml version=\"1.1\" encoding=\"UTF-8\" standalone=\"no\"?> "

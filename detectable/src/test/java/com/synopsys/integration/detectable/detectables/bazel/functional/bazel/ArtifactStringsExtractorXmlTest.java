@@ -26,9 +26,9 @@ import com.synopsys.integration.detectable.detectable.executable.ExecutableRunne
 import com.synopsys.integration.detectable.detectable.executable.ExecutableRunnerException;
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRule;
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRuleJsonProcessor;
-import com.synopsys.integration.detectable.detectables.bazel.parse.BazelQueryXmlOutputParser;
-import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractor;
-import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractorXml;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.BazelQueryXmlOutputParser;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractor;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractorXml;
 
 public class ArtifactStringsExtractorXmlTest {
 

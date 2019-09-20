@@ -40,7 +40,7 @@ import com.synopsys.integration.detectable.detectable.executable.ExecutableRunne
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalId;
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRule;
 import com.synopsys.integration.detectable.detectables.bazel.model.SearchReplacePattern;
-import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractor;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractor;
 import com.synopsys.integration.exception.IntegrationException;
 
 public class BazelExternalIdGenerator {
@@ -65,6 +65,7 @@ public class BazelExternalIdGenerator {
         this.bazelTarget = bazelTarget;
     }
 
+    // TODO This actually can't throw an exeption; deeper down, add them to exception list instead of throwing them
     public List<BazelExternalId> generate(final BazelExternalIdExtractionFullRule fullRule) {
         final List<BazelExternalId> projectExternalIds = new ArrayList<>();
         final List<String> dependencyListQueryArgs = deriveDependencyListQueryArgs(fullRule);
@@ -75,8 +76,12 @@ public class BazelExternalIdGenerator {
         for (final String rawDependency : rawDependencies.get()) {
             String bazelExternalId = transformRawDependencyToBazelExternalId(fullRule, rawDependency);
 
-            // TODO this assumes XML; needs to handle either an XML rule, or a textproto rule
-            final Optional<List<String>> artifactStrings = artifactStringsExtractorXml.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
+            final Optional<List<String>> artifactStrings;
+            if (fullRule.getDependencyDetailsXmlQueryBazelCmdArguments() != null) {
+                artifactStrings = artifactStringsExtractorXml.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
+            } else {
+                artifactStrings = artifactStringsExtractorTextProto.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
+            }
             if (!artifactStrings.isPresent()) {
                 return projectExternalIds;
             }

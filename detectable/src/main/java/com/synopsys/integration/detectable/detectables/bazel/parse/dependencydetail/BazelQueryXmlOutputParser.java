@@ -20,7 +20,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.synopsys.integration.detectable.detectables.bazel.parse;
+package com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,6 +31,8 @@ import javax.xml.xpath.XPathExpressionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
+
+import com.synopsys.integration.detectable.detectables.bazel.parse.XPathParser;
 
 public class BazelQueryXmlOutputParser {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

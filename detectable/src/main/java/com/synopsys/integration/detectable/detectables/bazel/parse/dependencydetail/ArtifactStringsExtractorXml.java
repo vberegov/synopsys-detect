@@ -20,7 +20,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.synopsys.integration.detectable.detectables.bazel.parse.detail;
+package com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,25 +35,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import com.synopsys.integration.detectable.detectable.executable.ExecutableOutput;
-import com.synopsys.integration.detectable.detectable.executable.ExecutableRunner;
-import com.synopsys.integration.detectable.detectable.executable.ExecutableRunnerException;
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRule;
-import com.synopsys.integration.detectable.detectables.bazel.parse.BazelQueryXmlOutputParser;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelVariableSubstitutor;
 
 public class ArtifactStringsExtractorXml implements ArtifactStringsExtractor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final ExecutableRunner executableRunner;
+    private final DetailsQueryExecutor detailsQueryExecutor;
     private final File bazelExe;
     private final File workspaceDir;
     private final String bazelTarget;
     private final BazelQueryXmlOutputParser parser;
 
-    public ArtifactStringsExtractorXml(final ExecutableRunner executableRunner, final File bazelExe, final BazelQueryXmlOutputParser parser,
+    public ArtifactStringsExtractorXml(final DetailsQueryExecutor detailsQueryExecutor, final File bazelExe, final BazelQueryXmlOutputParser parser,
         final File workspaceDir, final String bazelTarget) {
-        this.executableRunner = executableRunner;
+        this.detailsQueryExecutor = detailsQueryExecutor;
         this.bazelExe = bazelExe;
         this.parser = parser;
         this.workspaceDir = workspaceDir;
@@ -64,7 +60,7 @@ public class ArtifactStringsExtractorXml implements ArtifactStringsExtractor {
     public Optional<List<String>> extractArtifactStrings(final BazelExternalIdExtractionFullRule fullRule, final String bazelExternalId,
             final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated) {
         final List<String> dependencyDetailsQueryArgs = deriveDependencyDetailsQueryArgs(fullRule, bazelExternalId);
-        final Optional<String> xml = executeDependencyDetailsQuery(fullRule, dependencyDetailsQueryArgs, exceptionsGenerated);
+        final Optional<String> xml = detailsQueryExecutor.executeDependencyDetailsQuery(workspaceDir, bazelExe, fullRule, dependencyDetailsQueryArgs, exceptionsGenerated);
         if (!xml.isPresent()) {
             return Optional.empty();
         }
@@ -77,24 +73,7 @@ public class ArtifactStringsExtractorXml implements ArtifactStringsExtractor {
         return dependencyVariableSubstitutor.substitute(fullRule.getDependencyDetailsXmlQueryBazelCmdArguments());
     }
 
-    private Optional<String> executeDependencyDetailsQuery(final BazelExternalIdExtractionFullRule fullRule, final List<String> dependencyDetailsQueryArgs,
-        final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated) {
-        ExecutableOutput dependencyDetailsXmlQueryResults = null;
-        try {
-            dependencyDetailsXmlQueryResults = executableRunner.execute(workspaceDir, bazelExe, dependencyDetailsQueryArgs);
-        } catch (ExecutableRunnerException e) {
-            logger.debug(String.format("Error executing bazel with args: %s: %s", fullRule.getDependencyDetailsXmlQueryBazelCmdArguments(), e.getMessage()));
-            exceptionsGenerated.put(fullRule, e);
-            return Optional.empty();
-        }
-        final int dependencyDetailsXmlQueryReturnCode = dependencyDetailsXmlQueryResults.getReturnCode();
-        final String dependencyDetailsXmlQueryOutput = dependencyDetailsXmlQueryResults.getStandardOutput();
-        logger.debug(String.format("Bazel targetDependencieDetailsQuery returned %d; output: %s", dependencyDetailsXmlQueryReturnCode, dependencyDetailsXmlQueryOutput));
 
-        final String xml = dependencyDetailsXmlQueryResults.getStandardOutput();
-        logger.debug(String.format("Bazel query returned %d; output: %s", dependencyDetailsXmlQueryReturnCode, xml));
-        return Optional.of(xml);
-    }
 
     private Optional<List<String>> parseArtifactStringsFromXml(final BazelExternalIdExtractionFullRule fullRule, final String xml,
         final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated) {

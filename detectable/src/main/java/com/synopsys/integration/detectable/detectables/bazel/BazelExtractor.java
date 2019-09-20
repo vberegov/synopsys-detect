@@ -40,10 +40,11 @@ import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternal
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionSimpleRules;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelCodeLocationBuilder;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelExternalIdGenerator;
-import com.synopsys.integration.detectable.detectables.bazel.parse.BazelQueryXmlOutputParser;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractorTextProto;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.BazelQueryXmlOutputParser;
 import com.synopsys.integration.detectable.detectables.bazel.parse.RuleConverter;
-import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractor;
-import com.synopsys.integration.detectable.detectables.bazel.parse.detail.ArtifactStringsExtractorXml;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractor;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractorXml;
 
 public class BazelExtractor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -77,10 +78,12 @@ public class BazelExtractor {
                     logger.debug(String.format("Using default rules:\n%s", bazelExternalIdExtractionFullRuleJsonProcessor.toJson(fullRules)));
                 }
             }
+            // TODO pass in a DetailsQueryExecutor instead of an executableRunner
             final ArtifactStringsExtractor artifactStringsExtractorXml = new ArtifactStringsExtractorXml(executableRunner, bazelExe, parser, workspaceDir, bazelTarget);
+            final ArtifactStringsExtractor artifactStringsExtractorTextProto = new ArtifactStringsExtractorTextProto(executableRunner, bazelExe, parser, workspaceDir, bazelTarget);
             final BazelExternalIdGenerator externalIdGenerator = new BazelExternalIdGenerator(executableRunner, bazelExe.toString(),
                 artifactStringsExtractorXml,
-                null,
+                artifactStringsExtractorTextProto,
                 workspaceDir, bazelTarget);
             fullRules.stream()
                 .map(externalIdGenerator::generate)

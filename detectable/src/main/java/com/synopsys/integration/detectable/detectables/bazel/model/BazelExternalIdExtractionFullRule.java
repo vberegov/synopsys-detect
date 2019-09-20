@@ -34,14 +34,14 @@ public class BazelExternalIdExtractionFullRule extends Stringable {
 
     //// Only one of the following two sets of fields should be populated.
 
-    //// Set 1: Populate for detail queries producing XML:
+    //// Set 1: Populate for dependencydetail queries producing XML:
 
     // The args for the bazel query to get a dependency's details
     private final List<String> dependencyDetailsXmlQueryBazelCmdArguments;
     private final String xPathQuery;
     private final String ruleElementValueAttrName;
 
-    //// Set 2: Populate for detail queries producing textproto:
+    //// Set 2: Populate for dependencydetail queries producing textproto:
 
     private final List<String> dependencyDetailsTextProtoQueryBazelCmdArguments;
     private final String pathToAttributeObjectList;
