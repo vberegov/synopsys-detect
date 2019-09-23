@@ -65,7 +65,6 @@ public class BazelExternalIdGenerator {
         this.bazelTarget = bazelTarget;
     }
 
-    // TODO This actually can't throw an exeption; deeper down, add them to exception list instead of throwing them
     public List<BazelExternalId> generate(final BazelExternalIdExtractionFullRule fullRule) {
         final List<BazelExternalId> projectExternalIds = new ArrayList<>();
         final List<String> dependencyListQueryArgs = deriveDependencyListQueryArgs(fullRule);
