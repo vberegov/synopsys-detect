@@ -1,0 +1,32 @@
+[
+  {
+    "targetDependenciesQueryBazelCmdArguments": [
+      "query",
+      "filter(\"@.*:jar\", deps(${detect.bazel.target}))"
+    ],
+    "dependencyToBazelExternalIdTransforms": [
+      {
+        "searchRegex": "^@",
+        "replacementString": ""
+      },
+      {
+        "searchRegex": "//.*",
+        "replacementString": ""
+      },
+      {
+        "searchRegex": "^",
+        "replacementString": "//external:"
+      }
+    ],
+    "dependencyDetailsTextProtoQueryBazelCmdArguments": [
+      "cquery",
+      "kind(maven_jar, ${detect.bazel.target.dependency})",
+      "--output",
+      "textproto"
+    ],
+    "pathToAttributeObjectList": ":results:target:rule:attribute",
+    "gavObjectName": "artifact",
+    "gavFieldName": "string_value",
+    "artifactStringSeparatorRegex": ":"
+  }
+]

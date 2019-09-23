@@ -17,13 +17,13 @@ public class BazelQueryTextProtoOutputParserTest {
     public void testParseGavFromTextProto() throws Exception {
         final File textProtoFile = new File("src/test/resources/detectables/functional/bazel/sample.textproto");
         final String textProtoString = FileUtils.readFileToString(textProtoFile, StandardCharsets.UTF_8);
-        final BazelQueryTextProtoOutputParser app = new BazelQueryTextProtoOutputParser();
+        final BazelQueryTextProtoOutputParser parser = new BazelQueryTextProtoOutputParser();
 
         final String pathToAttributeObjectList = ":results:target:rule:attribute";
         final String gavObjectName = "artifact";
         final String gavFieldName = "string_value";
 
-        final List<String> gavStrings = app.parseStringValuesFromTextProto(pathToAttributeObjectList, gavObjectName, gavFieldName, textProtoString);
+        final List<String> gavStrings = parser.parseStringValuesFromTextProto(pathToAttributeObjectList, gavObjectName, gavFieldName, textProtoString);
         assertEquals("org.apache.commons:commons-io:1.3.2", gavStrings.get(0));
     }
 }
