@@ -13,12 +13,12 @@ import com.synopsys.integration.detectable.detectable.executable.ExecutableRunne
 import com.synopsys.integration.detectable.detectable.executable.ExecutableRunnerException;
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRule;
 
-public class DetailsQueryExecutor {
+public class BazelDetailsQueryExecutor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ExecutableRunner executableRunner;
 
-    public DetailsQueryExecutor(final ExecutableRunner executableRunner) {
+    public BazelDetailsQueryExecutor(final ExecutableRunner executableRunner) {
         this.executableRunner = executableRunner;
     }
 
@@ -32,12 +32,12 @@ public class DetailsQueryExecutor {
             exceptionsGenerated.put(fullRule, e);
             return Optional.empty();
         }
-        final int dependencyDetailsXmlQueryReturnCode = dependencyDetailsQueryResults.getReturnCode();
-        final String dependencyDetailsXmlQueryOutput = dependencyDetailsQueryResults.getStandardOutput();
-        logger.debug(String.format("Bazel targetDependencieDetailsQuery returned %d; output: %s", dependencyDetailsXmlQueryReturnCode, dependencyDetailsXmlQueryOutput));
+        final int dependencyDetailsQueryReturnCode = dependencyDetailsQueryResults.getReturnCode();
+        final String dependencyDetailsQueryOutput = dependencyDetailsQueryResults.getStandardOutput();
+        logger.debug(String.format("Bazel targetDependencieDetailsQuery returned %d; output: %s", dependencyDetailsQueryReturnCode, dependencyDetailsQueryOutput));
 
-        final String xml = dependencyDetailsQueryResults.getStandardOutput();
-        logger.debug(String.format("Bazel query returned %d; output: %s", dependencyDetailsXmlQueryReturnCode, xml));
-        return Optional.of(xml);
+        final String queryCmdOutput = dependencyDetailsQueryResults.getStandardOutput();
+        logger.debug(String.format("Bazel query returned %d; output: %s", dependencyDetailsQueryReturnCode, queryCmdOutput));
+        return Optional.of(queryCmdOutput);
     }
 }

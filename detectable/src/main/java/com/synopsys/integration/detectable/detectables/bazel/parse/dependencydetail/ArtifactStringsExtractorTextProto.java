@@ -10,19 +10,20 @@ import org.slf4j.LoggerFactory;
 
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRule;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelVariableSubstitutor;
+import com.synopsys.integration.exception.IntegrationException;
 
 public class ArtifactStringsExtractorTextProto implements  ArtifactStringsExtractor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final DetailsQueryExecutor detailsQueryExecutor;
+    private final BazelDetailsQueryExecutor bazelDetailsQueryExecutor;
     private final File bazelExe;
     private final File workspaceDir;
     private final String bazelTarget;
     private final BazelQueryTextProtoOutputParser parser;
 
-    public ArtifactStringsExtractorTextProto(final DetailsQueryExecutor detailsQueryExecutor, final File bazelExe, final BazelQueryTextProtoOutputParser parser,
+    public ArtifactStringsExtractorTextProto(final BazelDetailsQueryExecutor bazelDetailsQueryExecutor, final File bazelExe, final BazelQueryTextProtoOutputParser parser,
         final File workspaceDir, final String bazelTarget) {
-        this.detailsQueryExecutor = detailsQueryExecutor;
+        this.bazelDetailsQueryExecutor = bazelDetailsQueryExecutor;
         this.bazelExe = bazelExe;
         this.parser = parser;
         this.workspaceDir = workspaceDir;
@@ -32,7 +33,7 @@ public class ArtifactStringsExtractorTextProto implements  ArtifactStringsExtrac
     @Override
     public Optional<List<String>> extractArtifactStrings(final BazelExternalIdExtractionFullRule fullRule, final String bazelExternalId, final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated) {
         final List<String> dependencyDetailsQueryArgs = deriveDependencyDetailsQueryArgs(fullRule, bazelExternalId);
-        final Optional<String> textProto = detailsQueryExecutor.executeDependencyDetailsQuery(workspaceDir, bazelExe, fullRule, dependencyDetailsQueryArgs, exceptionsGenerated);
+        final Optional<String> textProto = bazelDetailsQueryExecutor.executeDependencyDetailsQuery(workspaceDir, bazelExe, fullRule, dependencyDetailsQueryArgs, exceptionsGenerated);
         if (!textProto.isPresent()) {
             return Optional.empty();
         }
@@ -50,8 +51,13 @@ public class ArtifactStringsExtractorTextProto implements  ArtifactStringsExtrac
         final String gavObjectName = fullRule.getGavObjectName();
         final String gavFieldName = fullRule.getGavFieldName();
 
-        // TODO This actually can't throw an exeption; add them to exception list instead of throwing them
-        final List<String> gavStrings = parser.parseStringValuesFromTextProto(pathToAttributeObjectList, gavObjectName, gavFieldName, textProtoString);
+        List<String> gavStrings = null;
+        try {
+            gavStrings = parser.parseStringValuesFromTextProto(pathToAttributeObjectList, gavObjectName, gavFieldName, textProtoString);
+        } catch (IntegrationException e) {
+            logger.debug(String.format("Error parsing textproto output: %s: %s", textProtoString, e.getMessage()), e);
+            exceptionsGenerated.put(fullRule, e);
+        }
         if ((gavStrings == null) || (gavStrings.size() == 0)) {
             return Optional.empty();
         } else {

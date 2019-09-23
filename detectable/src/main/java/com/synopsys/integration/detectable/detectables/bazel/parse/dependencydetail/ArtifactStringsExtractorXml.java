@@ -41,15 +41,15 @@ import com.synopsys.integration.detectable.detectables.bazel.parse.BazelVariable
 public class ArtifactStringsExtractorXml implements ArtifactStringsExtractor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final DetailsQueryExecutor detailsQueryExecutor;
+    private final BazelDetailsQueryExecutor bazelDetailsQueryExecutor;
     private final File bazelExe;
     private final File workspaceDir;
     private final String bazelTarget;
     private final BazelQueryXmlOutputParser parser;
 
-    public ArtifactStringsExtractorXml(final DetailsQueryExecutor detailsQueryExecutor, final File bazelExe, final BazelQueryXmlOutputParser parser,
+    public ArtifactStringsExtractorXml(final BazelDetailsQueryExecutor bazelDetailsQueryExecutor, final File bazelExe, final BazelQueryXmlOutputParser parser,
         final File workspaceDir, final String bazelTarget) {
-        this.detailsQueryExecutor = detailsQueryExecutor;
+        this.bazelDetailsQueryExecutor = bazelDetailsQueryExecutor;
         this.bazelExe = bazelExe;
         this.parser = parser;
         this.workspaceDir = workspaceDir;
@@ -60,7 +60,7 @@ public class ArtifactStringsExtractorXml implements ArtifactStringsExtractor {
     public Optional<List<String>> extractArtifactStrings(final BazelExternalIdExtractionFullRule fullRule, final String bazelExternalId,
             final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated) {
         final List<String> dependencyDetailsQueryArgs = deriveDependencyDetailsQueryArgs(fullRule, bazelExternalId);
-        final Optional<String> xml = detailsQueryExecutor.executeDependencyDetailsQuery(workspaceDir, bazelExe, fullRule, dependencyDetailsQueryArgs, exceptionsGenerated);
+        final Optional<String> xml = bazelDetailsQueryExecutor.executeDependencyDetailsQuery(workspaceDir, bazelExe, fullRule, dependencyDetailsQueryArgs, exceptionsGenerated);
         if (!xml.isPresent()) {
             return Optional.empty();
         }

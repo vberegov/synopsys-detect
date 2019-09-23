@@ -41,22 +41,30 @@ import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternal
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelCodeLocationBuilder;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelExternalIdGenerator;
 import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractorTextProto;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.BazelQueryTextProtoOutputParser;
 import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.BazelQueryXmlOutputParser;
 import com.synopsys.integration.detectable.detectables.bazel.parse.RuleConverter;
 import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractor;
 import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractorXml;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.BazelDetailsQueryExecutor;
 
 public class BazelExtractor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ExecutableRunner executableRunner;
-    private final BazelQueryXmlOutputParser parser;
+    private final BazelDetailsQueryExecutor bazelDetailsQueryExecutor;
+    private final BazelQueryXmlOutputParser xmlParser;
+    private final BazelQueryTextProtoOutputParser textProtoParser;
     private final BazelCodeLocationBuilder codeLocationGenerator;
     private final BazelExternalIdExtractionFullRuleJsonProcessor bazelExternalIdExtractionFullRuleJsonProcessor;
 
-    public BazelExtractor(final ExecutableRunner executableRunner, BazelQueryXmlOutputParser parser,
+    public BazelExtractor(final ExecutableRunner executableRunner, final BazelDetailsQueryExecutor bazelDetailsQueryExecutor,
+        final BazelQueryXmlOutputParser xmlParser,
+        final BazelQueryTextProtoOutputParser textProtoParser,
         final BazelCodeLocationBuilder codeLocationGenerator, final BazelExternalIdExtractionFullRuleJsonProcessor bazelExternalIdExtractionFullRuleJsonProcessor) {
         this.executableRunner = executableRunner;
-        this.parser = parser;
+        this.bazelDetailsQueryExecutor = bazelDetailsQueryExecutor;
+        this.xmlParser = xmlParser;
+        this.textProtoParser = textProtoParser;
         this.codeLocationGenerator = codeLocationGenerator;
         this.bazelExternalIdExtractionFullRuleJsonProcessor = bazelExternalIdExtractionFullRuleJsonProcessor;
     }
@@ -78,9 +86,8 @@ public class BazelExtractor {
                     logger.debug(String.format("Using default rules:\n%s", bazelExternalIdExtractionFullRuleJsonProcessor.toJson(fullRules)));
                 }
             }
-            // TODO pass in a DetailsQueryExecutor instead of an executableRunner
-            final ArtifactStringsExtractor artifactStringsExtractorXml = new ArtifactStringsExtractorXml(executableRunner, bazelExe, parser, workspaceDir, bazelTarget);
-            final ArtifactStringsExtractor artifactStringsExtractorTextProto = new ArtifactStringsExtractorTextProto(executableRunner, bazelExe, parser, workspaceDir, bazelTarget);
+            final ArtifactStringsExtractor artifactStringsExtractorXml = new ArtifactStringsExtractorXml(bazelDetailsQueryExecutor, bazelExe, xmlParser, workspaceDir, bazelTarget);
+            final ArtifactStringsExtractor artifactStringsExtractorTextProto = new ArtifactStringsExtractorTextProto(bazelDetailsQueryExecutor, bazelExe, textProtoParser, workspaceDir, bazelTarget);
             final BazelExternalIdGenerator externalIdGenerator = new BazelExternalIdGenerator(executableRunner, bazelExe.toString(),
                 artifactStringsExtractorXml,
                 artifactStringsExtractorTextProto,

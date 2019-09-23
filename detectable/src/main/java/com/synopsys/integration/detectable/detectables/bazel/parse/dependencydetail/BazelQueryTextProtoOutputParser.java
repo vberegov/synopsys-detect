@@ -9,10 +9,11 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import com.synopsys.integration.exception.IntegrationException;
+
 public class BazelQueryTextProtoOutputParser {
 
-    // TODO throw a better exception
-    public List<String> parseStringValuesFromTextProto(final String pathToAttributeObjectList, final String gavObjectName, final String gavFieldName, final String textProtoString) throws Exception {
+    public List<String> parseStringValuesFromTextProto(final String pathToAttributeObjectList, final String gavObjectName, final String gavFieldName, final String textProtoString) throws IntegrationException {
 
         final List<String> linesList = splitStringIntoLines(textProtoString);
         final String gavString = parseGavString(pathToAttributeObjectList, gavObjectName, gavFieldName, linesList);
@@ -25,21 +26,21 @@ public class BazelQueryTextProtoOutputParser {
         return Arrays.asList(lines);
     }
 
-    private String parseGavString(final String pathToAttributeObjectList, final String gavObjectName, final String gavFieldName, final List<String> textProtoStringList) throws Exception {
+    private String parseGavString(final String pathToAttributeObjectList, final String gavObjectName, final String gavFieldName, final List<String> textProtoStringList) throws IntegrationException {
         final List<Map<String, String>> resultsTargetAttributeObjects = parseResultsTargetAttributeObjects(pathToAttributeObjectList, textProtoStringList);
         final Map<String, String> artifactObject = findArtifactObject(gavObjectName, resultsTargetAttributeObjects);
         return getValueFromArtifactObject(gavFieldName, artifactObject);
     }
 
-    private String getValueFromArtifactObject(final String gavFieldName, final Map<String, String> artifactObject) throws Exception {
+    private String getValueFromArtifactObject(final String gavFieldName, final Map<String, String> artifactObject) throws IntegrationException {
         final String value = artifactObject.get(gavFieldName);
         if (StringUtils.isNotBlank(value)) {
             return value;
         }
-        throw new Exception(String.format("Value not found in artifact object: %s", artifactObject));
+        throw new IntegrationException(String.format("Value not found in artifact object: %s", artifactObject));
     }
 
-    private Map<String, String> findArtifactObject(final String gavObjectName, final List<Map<String, String>> resultsTargetAttributeObjects) throws Exception {
+    private Map<String, String> findArtifactObject(final String gavObjectName, final List<Map<String, String>> resultsTargetAttributeObjects) throws IntegrationException {
         for (int i=0; i < resultsTargetAttributeObjects.size(); i++) {
             final Map<String, String> currentAttributeObject = resultsTargetAttributeObjects.get(i);
             System.out.println(String.format("Read resultsTargetAttributeObject: %s", currentAttributeObject));
@@ -48,7 +49,7 @@ public class BazelQueryTextProtoOutputParser {
                 return currentAttributeObject;
             }
         }
-        throw new Exception("Artifact Object not found");
+        throw new IntegrationException("Artifact Object not found");
     }
 
     private List<Map<String, String>> parseResultsTargetAttributeObjects(final String pathToAttributeObjectList, final List<String> textProtoStringList) {

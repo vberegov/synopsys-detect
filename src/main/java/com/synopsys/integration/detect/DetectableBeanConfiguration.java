@@ -68,8 +68,10 @@ import com.synopsys.integration.detectable.detectables.bazel.BazelDetectable;
 import com.synopsys.integration.detectable.detectables.bazel.BazelExtractor;
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRuleJsonProcessor;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelCodeLocationBuilder;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.BazelQueryTextProtoOutputParser;
 import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.BazelQueryXmlOutputParser;
 import com.synopsys.integration.detectable.detectables.bazel.parse.XPathParser;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.BazelDetailsQueryExecutor;
 import com.synopsys.integration.detectable.detectables.bitbake.BitbakeDetectable;
 import com.synopsys.integration.detectable.detectables.bitbake.BitbakeExtractor;
 import com.synopsys.integration.detectable.detectables.bitbake.parse.BitbakeGraphTransformer;
@@ -246,10 +248,12 @@ public class DetectableBeanConfiguration {
 
     @Bean
     public BazelExtractor bazelExtractor() {
-        final BazelQueryXmlOutputParser parser = new BazelQueryXmlOutputParser(new XPathParser());
+        final BazelQueryXmlOutputParser xmlParser = new BazelQueryXmlOutputParser(new XPathParser());
+        final BazelQueryTextProtoOutputParser textProtoOutputParser = new BazelQueryTextProtoOutputParser();
         final BazelCodeLocationBuilder codeLocationGenerator = new BazelCodeLocationBuilder(externalIdFactory);
         final BazelExternalIdExtractionFullRuleJsonProcessor bazelExternalIdExtractionFullRuleJsonProcessor = new BazelExternalIdExtractionFullRuleJsonProcessor(gson);
-        return new BazelExtractor(executableRunner, parser, codeLocationGenerator, bazelExternalIdExtractionFullRuleJsonProcessor);
+        final BazelDetailsQueryExecutor bazelDetailsQueryExecutor = new BazelDetailsQueryExecutor(executableRunner);
+        return new BazelExtractor(executableRunner, bazelDetailsQueryExecutor, xmlParser, textProtoOutputParser, codeLocationGenerator, bazelExternalIdExtractionFullRuleJsonProcessor);
     }
 
     public FilePathGenerator filePathGenerator() {
