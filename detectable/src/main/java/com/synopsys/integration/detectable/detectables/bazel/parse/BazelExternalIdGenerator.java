@@ -128,20 +128,19 @@ public class BazelExternalIdGenerator {
             exceptionsGenerated.put(fullRule, new IntegrationException(msg));
             return Optional.empty();
         }
-        final String targetDependenciesQueryOutput = targetDependenciesQueryResults.getStandardOutput();
+        final List<String> targetDependenciesQueryOutput = targetDependenciesQueryResults.getStandardOutputAsList();
         logger.debug(String.format("Bazel targetDependenciesQuery returned %d; output: %s", targetDependenciesQueryReturnCode, targetDependenciesQueryOutput));
-        if (StringUtils.isBlank(targetDependenciesQueryOutput)) {
+        if ((targetDependenciesQueryOutput == null) || (targetDependenciesQueryOutput.size() == 0)) {
             logger.debug("Bazel targetDependenciesQuery found no dependencies");
             return Optional.empty();
         }
-        final String[] rawDependencies = targetDependenciesQueryOutput.split("\\r?\\n");
-        final String[] rawDependenciesCleaned = cleanRawDependencies(rawDependencies);
+        final String[] rawDependenciesCleaned = cleanRawDependencies(targetDependenciesQueryOutput);
         return Optional.of(rawDependenciesCleaned);
     }
 
     @NotNull
-    private String[] cleanRawDependencies(final String[] rawDependencies) {
-        final String[] rawDependenciesCleaned = new String[rawDependencies.length];
+    private String[] cleanRawDependencies(final List<String> rawDependencies) {
+        final String[] rawDependenciesCleaned = new String[rawDependencies.size()];
         int rawDependencyIndex=0;
         for (final String rawDependency : rawDependencies) {
             final int indexOfTrailingJunk = rawDependency.indexOf(" (");

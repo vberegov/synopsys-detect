@@ -38,7 +38,7 @@ public class BazelExtractorTest {
         final List dependencyListQueryArgs = Arrays.asList("query", "filter(\"@.*:jar\", deps(//:ProjectRunner))");
         Mockito.when(executableRunner.execute(workspaceDir, bazelExe.getAbsolutePath(), dependencyListQueryArgs)).thenReturn(dependenciesQueryExeOutput);
         Mockito.when(dependenciesQueryExeOutput.getReturnCode()).thenReturn(0);
-        Mockito.when(dependenciesQueryExeOutput.getStandardOutput()).thenReturn("@org_apache_commons_commons_io//jar:jar\n@com_google_guava_guava//jar:jar");
+        Mockito.when(dependenciesQueryExeOutput.getStandardOutputAsList()).thenReturn(Arrays.asList("@org_apache_commons_commons_io//jar:jar", "@com_google_guava_guava//jar:jar"));
         final BazelDetailsQueryExecutor bazelDetailsQueryExecutor = new BazelDetailsQueryExecutor(executableRunner);
 
         final File commonsIoXmlFile = new File("src/test/resources/detectables/functional/bazel/commons_io.xml");
