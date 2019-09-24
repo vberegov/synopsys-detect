@@ -64,7 +64,7 @@ public class ArtifactStringsExtractorTest {
 
     @Test
     public void testTextProto() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException, IntegrationException {
-        final File queryOutputFile = new File("src/test/resources/detectables/functional/bazel/sample.textproto");
+        final File queryOutputFile = new File("src/test/resources/detectables/functional/bazel/commons_io.textproto");
         final String queryOutput = FileUtils.readFileToString(queryOutputFile, StandardCharsets.UTF_8);
         final BazelDetailsQueryExecutor bazelDetailsQueryExecutor = Mockito.mock(BazelDetailsQueryExecutor.class);
         Mockito.when(bazelDetailsQueryExecutor.executeDependencyDetailsQuery(Mockito.any(File.class), Mockito.any(File.class), Mockito.any(BazelExternalIdExtractionFullRule.class), Mockito.anyList(), Mockito.anyMap())).thenReturn(Optional.of(queryOutput));

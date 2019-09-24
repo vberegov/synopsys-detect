@@ -29,6 +29,51 @@ public class BazelExtractorTest {
     @Test
     public void testDefault() throws ExecutableRunnerException, IOException {
 
+        final String fullRulesPath = "src/test/resources/detectables/functional/bazel/full_default.rules";
+
+        final File commonsIoDetailsQueryOutputFile = new File("src/test/resources/detectables/functional/bazel/commons_io.xml");
+        final File guavaDetailsQueryOutputFile = new File("src/test/resources/detectables/functional/bazel/guava.xml");
+
+        final ArrayList<String> dependencyDetailsQueryArgsGuava = new ArrayList<>();
+        dependencyDetailsQueryArgsGuava.add("query");
+        dependencyDetailsQueryArgsGuava.add("kind(maven_jar, //external:com_google_guava_guava)");
+        dependencyDetailsQueryArgsGuava.add("--output");
+        dependencyDetailsQueryArgsGuava.add("xml");
+
+        final ArrayList<String> dependencyDetailsQueryArgsCommonsIo = new ArrayList<>();
+        dependencyDetailsQueryArgsCommonsIo.add("query");
+        dependencyDetailsQueryArgsCommonsIo.add("kind(maven_jar, //external:org_apache_commons_commons_io)");
+        dependencyDetailsQueryArgsCommonsIo.add("--output");
+        dependencyDetailsQueryArgsCommonsIo.add("xml");
+
+        test(fullRulesPath, commonsIoDetailsQueryOutputFile, guavaDetailsQueryOutputFile, dependencyDetailsQueryArgsGuava, dependencyDetailsQueryArgsCommonsIo);
+    }
+
+    @Test
+    public void testCquery() throws ExecutableRunnerException, IOException {
+
+        final String fullRulesPath = "src/test/resources/detectables/functional/bazel/full_cquery.rules";
+
+        final File commonsIoDetailsQueryOutputFile = new File("src/test/resources/detectables/functional/bazel/commons_io.textproto");
+        final File guavaDetailsQueryOutputFile = new File("src/test/resources/detectables/functional/bazel/guava.textproto");
+
+        final ArrayList<String> dependencyDetailsQueryArgsGuava = new ArrayList<>();
+        dependencyDetailsQueryArgsGuava.add("cquery");
+        dependencyDetailsQueryArgsGuava.add("kind(maven_jar, //external:com_google_guava_guava)");
+        dependencyDetailsQueryArgsGuava.add("--output");
+        dependencyDetailsQueryArgsGuava.add("textproto");
+
+        final ArrayList<String> dependencyDetailsQueryArgsCommonsIo = new ArrayList<>();
+        dependencyDetailsQueryArgsCommonsIo.add("cquery");
+        dependencyDetailsQueryArgsCommonsIo.add("kind(maven_jar, //external:org_apache_commons_commons_io)");
+        dependencyDetailsQueryArgsCommonsIo.add("--output");
+        dependencyDetailsQueryArgsCommonsIo.add("textproto");
+
+        test(fullRulesPath, commonsIoDetailsQueryOutputFile, guavaDetailsQueryOutputFile, dependencyDetailsQueryArgsGuava, dependencyDetailsQueryArgsCommonsIo);
+    }
+
+    private void test(final String fullRulesPath, final File commonsIoDetailsQueryOutputFile, final File guavaDetailsQueryOutputFile, final ArrayList<String> dependencyDetailsQueryArgsGuava,
+        final ArrayList<String> dependencyDetailsQueryArgsCommonsIo) throws ExecutableRunnerException, IOException {
         final ExecutableRunner executableRunner = Mockito.mock(ExecutableRunner.class);
         final ExecutableOutput dependenciesQueryExeOutput = Mockito.mock(ExecutableOutput.class);
         final File bazelExe = Mockito.mock(File.class);
@@ -41,35 +86,24 @@ public class BazelExtractorTest {
         Mockito.when(dependenciesQueryExeOutput.getStandardOutputAsList()).thenReturn(Arrays.asList("@org_apache_commons_commons_io//jar:jar", "@com_google_guava_guava//jar:jar"));
         final BazelDetailsQueryExecutor bazelDetailsQueryExecutor = new BazelDetailsQueryExecutor(executableRunner);
 
-        final File commonsIoXmlFile = new File("src/test/resources/detectables/functional/bazel/commons_io.xml");
-        final String commonsIoXml = FileUtils.readFileToString(commonsIoXmlFile, StandardCharsets.UTF_8);
+        final String commonsIoDetailsQueryOutput = FileUtils.readFileToString(commonsIoDetailsQueryOutputFile, StandardCharsets.UTF_8);
         final ExecutableOutput dependencyDetailsQueryCommonsIoExeOutput = Mockito.mock(ExecutableOutput.class);
-        final ArrayList<String> dependencyDetailsQueryArgsCommonsIo = new ArrayList<>();
-        dependencyDetailsQueryArgsCommonsIo.add("query");
-        dependencyDetailsQueryArgsCommonsIo.add("kind(maven_jar, //external:org_apache_commons_commons_io)");
-        dependencyDetailsQueryArgsCommonsIo.add("--output");
-        dependencyDetailsQueryArgsCommonsIo.add("xml");
+
         Mockito.when(executableRunner.execute(Mockito.eq(workspaceDir), Mockito.eq(bazelExe), Mockito.eq(dependencyDetailsQueryArgsCommonsIo))).thenReturn(dependencyDetailsQueryCommonsIoExeOutput);
         Mockito.when(dependencyDetailsQueryCommonsIoExeOutput.getReturnCode()).thenReturn(0);
-        Mockito.when(dependencyDetailsQueryCommonsIoExeOutput.getStandardOutput()).thenReturn(commonsIoXml);
+        Mockito.when(dependencyDetailsQueryCommonsIoExeOutput.getStandardOutput()).thenReturn(commonsIoDetailsQueryOutput);
 
-        final File guavaXmlFile = new File("src/test/resources/detectables/functional/bazel/guava.xml");
-        final String guavaXml = FileUtils.readFileToString(guavaXmlFile, StandardCharsets.UTF_8);
+        final String guavaDetailsQueryOutput = FileUtils.readFileToString(guavaDetailsQueryOutputFile, StandardCharsets.UTF_8);
         final ExecutableOutput dependencyDetailsQueryGuavaExeOutput = Mockito.mock(ExecutableOutput.class);
-        final ArrayList<String> dependencyDetailsQueryArgsGuava = new ArrayList<>();
-        dependencyDetailsQueryArgsGuava.add("query");
-        dependencyDetailsQueryArgsGuava.add("kind(maven_jar, //external:com_google_guava_guava)");
-        dependencyDetailsQueryArgsGuava.add("--output");
-        dependencyDetailsQueryArgsGuava.add("xml");
+
         Mockito.when(executableRunner.execute(Mockito.eq(workspaceDir), Mockito.eq(bazelExe), Mockito.eq(dependencyDetailsQueryArgsGuava))).thenReturn(dependencyDetailsQueryGuavaExeOutput);
         Mockito.when(dependencyDetailsQueryGuavaExeOutput.getReturnCode()).thenReturn(0);
-        Mockito.when(dependencyDetailsQueryGuavaExeOutput.getStandardOutput()).thenReturn(guavaXml);
+        Mockito.when(dependencyDetailsQueryGuavaExeOutput.getStandardOutput()).thenReturn(guavaDetailsQueryOutput);
         final BazelQueryXmlOutputParser bazelQueryXmlOutputParser = new BazelQueryXmlOutputParser(new XPathParser());
-        final BazelQueryTextProtoOutputParser bazelQueryTextProtoOutputParser = Mockito.mock(BazelQueryTextProtoOutputParser.class);
+        final BazelQueryTextProtoOutputParser bazelQueryTextProtoOutputParser = new BazelQueryTextProtoOutputParser();
         final BazelCodeLocationBuilder codeLocationGenerator = Mockito.mock(BazelCodeLocationBuilder.class);
         final BazelExternalIdExtractionFullRuleJsonProcessor bazelExternalIdExtractionFullRuleJsonProcessor = new BazelExternalIdExtractionFullRuleJsonProcessor(new Gson());
         final BazelExtractor bazelExtractor = new BazelExtractor(executableRunner, bazelDetailsQueryExecutor, bazelQueryXmlOutputParser, bazelQueryTextProtoOutputParser, codeLocationGenerator, bazelExternalIdExtractionFullRuleJsonProcessor);
-        final String fullRulesPath = "src/test/resources/detectables/functional/bazel/full_default.rules";
 
         bazelExtractor.extract(bazelExe, workspaceDir, bazelTarget, fullRulesPath);
 

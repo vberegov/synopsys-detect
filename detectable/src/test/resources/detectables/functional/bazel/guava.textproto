@@ -1,0 +1,76 @@
+results {
+  target {
+    type: RULE
+    rule {
+      name: "//external:com_google_guava_guava"
+      rule_class: "maven_jar"
+      location: "/root/home/steve/examples/java-tutorial/WORKSPACE:1:1"
+      attribute {
+        name: "generator_location"
+        type: STRING
+        string_value: ""
+        explicitly_specified: false
+        nodep: false
+      }
+      attribute {
+        name: "generator_function"
+        type: STRING
+        string_value: ""
+        explicitly_specified: false
+        nodep: false
+      }
+      attribute {
+        name: "name"
+        type: STRING
+        string_value: "com_google_guava_guava"
+        explicitly_specified: true
+        nodep: false
+      }
+      attribute {
+        name: "repository"
+        type: STRING
+        string_value: ""
+        explicitly_specified: false
+        nodep: false
+      }
+      attribute {
+        name: "artifact"
+        type: STRING
+        string_value: "com.google.guava:guava:18.0"
+        explicitly_specified: true
+        nodep: false
+      }
+      attribute {
+        name: "server"
+        type: STRING
+        string_value: ""
+        explicitly_specified: false
+        nodep: false
+      }
+      attribute {
+        name: "generator_name"
+        type: STRING
+        string_value: ""
+        explicitly_specified: false
+        nodep: false
+      }
+      attribute {
+        name: "sha1_src"
+        type: STRING
+        string_value: ""
+        explicitly_specified: false
+        nodep: false
+      }
+      attribute {
+        name: "sha1"
+        type: STRING
+        string_value: ""
+        explicitly_specified: false
+        nodep: false
+      }
+    }
+  }
+  configuration {
+    checksum: "c4592abc3e3009cd244247c661481fda"
+  }
+}

@@ -15,7 +15,7 @@ public class BazelQueryTextProtoOutputParserTest {
 
     @Test
     public void testParseGavFromTextProto() throws Exception {
-        final File textProtoFile = new File("src/test/resources/detectables/functional/bazel/sample.textproto");
+        final File textProtoFile = new File("src/test/resources/detectables/functional/bazel/commons_io.textproto");
         final String textProtoString = FileUtils.readFileToString(textProtoFile, StandardCharsets.UTF_8);
         final BazelQueryTextProtoOutputParser parser = new BazelQueryTextProtoOutputParser();
 
