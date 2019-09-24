@@ -121,7 +121,7 @@ public class BazelExternalIdGenerator {
         }
         final int targetDependenciesQueryReturnCode = targetDependenciesQueryResults.getReturnCode();
         if (targetDependenciesQueryReturnCode != 0) {
-            String msg = String.format("Error executing bazel with args: %s: Return code: %d; stderr: %s", dependencyListQueryArgs,
+            String msg = String.format("Error running dependency list query: bazel returned an error when run with args: %s: Return code: %d; stderr: %s", dependencyListQueryArgs,
                 targetDependenciesQueryReturnCode,
                 targetDependenciesQueryResults.getErrorOutput());
             logger.debug(msg);

@@ -50,12 +50,11 @@ public class BazelDetailsQueryExecutor {
         try {
             dependencyDetailsQueryResults = executableRunner.execute(workspaceDir, bazelExe, dependencyDetailsQueryArgs);
         } catch (ExecutableRunnerException e) {
-            logger.debug(String.format("Error executing bazel with args: %s: %s", dependencyDetailsQueryArgs, e.getMessage()));
+            logger.debug(String.format("Error running dependency details query: bazel returned an error when run with args: %s: %s", dependencyDetailsQueryArgs, e.getMessage()));
             exceptionsGenerated.put(fullRule, e);
             return Optional.empty();
         }
         final int dependencyDetailsQueryReturnCode = dependencyDetailsQueryResults.getReturnCode();
-        final String dependencyDetailsQueryOutput = dependencyDetailsQueryResults.getStandardOutput();
         logger.debug(String.format("Bazel targetDependencieDetailsQuery returned %d", dependencyDetailsQueryReturnCode));
 
         final String queryCmdOutput = dependencyDetailsQueryResults.getStandardOutput();
