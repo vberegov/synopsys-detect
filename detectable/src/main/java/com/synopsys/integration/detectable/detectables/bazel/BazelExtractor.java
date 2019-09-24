@@ -88,7 +88,7 @@ public class BazelExtractor {
             }
             final ArtifactStringsExtractor artifactStringsExtractorXml = new ArtifactStringsExtractorXml(bazelDetailsQueryExecutor, bazelExe, xmlParser, workspaceDir, bazelTarget);
             final ArtifactStringsExtractor artifactStringsExtractorTextProto = new ArtifactStringsExtractorTextProto(bazelDetailsQueryExecutor, bazelExe, textProtoParser, workspaceDir, bazelTarget);
-            final BazelExternalIdGenerator externalIdGenerator = new BazelExternalIdGenerator(executableRunner, bazelExe.toString(),
+            final BazelExternalIdGenerator externalIdGenerator = new BazelExternalIdGenerator(executableRunner, bazelExe.getAbsolutePath(),
                 artifactStringsExtractorXml,
                 artifactStringsExtractorTextProto,
                 workspaceDir, bazelTarget);
