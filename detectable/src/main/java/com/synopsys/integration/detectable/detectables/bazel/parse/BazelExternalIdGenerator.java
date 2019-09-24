@@ -74,13 +74,7 @@ public class BazelExternalIdGenerator {
         }
         for (final String rawDependency : rawDependencies.get()) {
             String bazelExternalId = transformRawDependencyToBazelExternalId(fullRule, rawDependency);
-
-            final Optional<List<String>> artifactStrings;
-            if (fullRule.getDependencyDetailsXmlQueryBazelCmdArguments() != null) {
-                artifactStrings = artifactStringsExtractorXml.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
-            } else {
-                artifactStrings = artifactStringsExtractorTextProto.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
-            }
+            final Optional<List<String>> artifactStrings = extractArtifactDetails(fullRule, bazelExternalId);
             if (!artifactStrings.isPresent()) {
                 return projectExternalIds;
             }
@@ -90,6 +84,16 @@ public class BazelExternalIdGenerator {
             }
         }
         return projectExternalIds;
+    }
+
+    private Optional<List<String>> extractArtifactDetails(final BazelExternalIdExtractionFullRule fullRule, final String bazelExternalId) {
+        final Optional<List<String>> artifactStrings;
+        if (fullRule.getDependencyDetailsXmlQueryBazelCmdArguments() != null) {
+            artifactStrings = artifactStringsExtractorXml.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
+        } else {
+            artifactStrings = artifactStringsExtractorTextProto.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
+        }
+        return artifactStrings;
     }
 
     public boolean isErrors() {

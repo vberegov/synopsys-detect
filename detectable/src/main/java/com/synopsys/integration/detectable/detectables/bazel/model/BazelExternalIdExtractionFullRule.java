@@ -34,14 +34,14 @@ public class BazelExternalIdExtractionFullRule extends Stringable {
 
     //// Only one of the following two sets of fields should be populated.
 
-    //// Set 1: Populate for dependencydetail queries producing XML:
+    //// Set 1: Populate for dependencydetail queries that output XML (--output xml):
 
     // The args for the bazel query to get a dependency's details
     private final List<String> dependencyDetailsXmlQueryBazelCmdArguments;
     private final String xPathQuery;
     private final String ruleElementValueAttrName;
 
-    //// Set 2: Populate for dependencydetail queries producing textproto:
+    //// Set 2: Populate for dependencydetail queries output textproto (--output textproto):
 
     private final List<String> dependencyDetailsTextProtoQueryBazelCmdArguments;
     private final String pathToAttributeObjectList;
@@ -50,8 +50,8 @@ public class BazelExternalIdExtractionFullRule extends Stringable {
 
     //// Always populate the remaining field:
 
-    // The separator between group, artifact, version in the bazel query output xml artifact value
-    // Example: ":"
+    // The separator between group, artifact, version in the bazel query output artifact value
+    // Usually: ":"
     private final String artifactStringSeparatorRegex;
 
     // Normal use case is to use RuleConverter.simpleToFull() to construct BazelExternalIdExtractionFullRule, not this ctor
