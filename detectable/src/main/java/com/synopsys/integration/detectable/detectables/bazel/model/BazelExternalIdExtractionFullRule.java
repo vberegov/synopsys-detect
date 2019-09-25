@@ -95,6 +95,19 @@ public class BazelExternalIdExtractionFullRule extends Stringable {
         this.artifactStringSeparatorRegex = artifactStringSeparatorRegex;
     }
 
+    public boolean isXmlRule() {
+        if (getDependencyDetailsXmlQueryBazelCmdArguments() != null) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isTextProtoRule() {
+        if (!isXmlRule()) {
+            return true;
+        }
+        return false;
+    }
 
     public List<String> getTargetDependenciesQueryBazelCmdArguments() {
         return targetDependenciesQueryBazelCmdArguments;

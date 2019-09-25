@@ -88,7 +88,7 @@ public class BazelExternalIdGenerator {
 
     private Optional<List<String>> extractArtifactDetails(final BazelExternalIdExtractionFullRule fullRule, final String bazelExternalId) {
         final Optional<List<String>> artifactStrings;
-        if (fullRule.getDependencyDetailsXmlQueryBazelCmdArguments() != null) {
+        if (fullRule.isXmlRule()) {
             artifactStrings = artifactStringsExtractorXml.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
         } else {
             artifactStrings = artifactStringsExtractorTextProto.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
