@@ -22,6 +22,7 @@ import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 
+import com.synopsys.integration.detectable.detectable.executable.ExecutableRunnerException;
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRule;
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRuleJsonProcessor;
 import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractorTextProto;
@@ -37,11 +38,11 @@ public class ArtifactStringsExtractorTest {
     public static final String BAZEL_EXTERNAL_ID_GUAVA = "com.google.guava:guava:18.0";
 
     @Test
-    public void testXml() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException {
+    public void testXml() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException, ExecutableRunnerException {
         final File queryOutputFile = new File("src/test/resources/detectables/functional/bazel/guava.xml");
         final String queryOutput = FileUtils.readFileToString(queryOutputFile, StandardCharsets.UTF_8);
         final BazelDetailsQueryExecutor bazelDetailsQueryExecutor = Mockito.mock(BazelDetailsQueryExecutor.class);
-        Mockito.when(bazelDetailsQueryExecutor.executeDependencyDetailsQuery(Mockito.any(File.class), Mockito.any(File.class), Mockito.any(BazelExternalIdExtractionFullRule.class), Mockito.anyList(), Mockito.anyMap())).thenReturn(Optional.of(queryOutput));
+        Mockito.when(bazelDetailsQueryExecutor.executeDependencyDetailsQuery(Mockito.any(File.class), Mockito.any(File.class), Mockito.anyList())).thenReturn(Optional.of(queryOutput));
         final File bazelExe = Mockito.mock(File.class);
         final BazelQueryXmlOutputParser parser = Mockito.mock(BazelQueryXmlOutputParser.class);
         Mockito.when(parser.parseStringValuesWithXPath(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(Arrays.asList(BAZEL_EXTERNAL_ID_GUAVA));
@@ -64,11 +65,11 @@ public class ArtifactStringsExtractorTest {
     }
 
     @Test
-    public void testTextProto() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException, IntegrationException {
+    public void testTextProto() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException, IntegrationException, ExecutableRunnerException {
         final File queryOutputFile = new File("src/test/resources/detectables/functional/bazel/commons_io.textproto");
         final String queryOutput = FileUtils.readFileToString(queryOutputFile, StandardCharsets.UTF_8);
         final BazelDetailsQueryExecutor bazelDetailsQueryExecutor = Mockito.mock(BazelDetailsQueryExecutor.class);
-        Mockito.when(bazelDetailsQueryExecutor.executeDependencyDetailsQuery(Mockito.any(File.class), Mockito.any(File.class), Mockito.any(BazelExternalIdExtractionFullRule.class), Mockito.anyList(), Mockito.anyMap())).thenReturn(Optional.of(queryOutput));
+        Mockito.when(bazelDetailsQueryExecutor.executeDependencyDetailsQuery(Mockito.any(File.class), Mockito.any(File.class), Mockito.anyList())).thenReturn(Optional.of(queryOutput));
         final File bazelExe = Mockito.mock(File.class);
         final BazelQueryTextProtoOutputParser parser = Mockito.mock(BazelQueryTextProtoOutputParser.class);
         Mockito.when(parser.parseStringValuesFromTextProto(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(Arrays.asList(BAZEL_EXTERNAL_ID_GUAVA));

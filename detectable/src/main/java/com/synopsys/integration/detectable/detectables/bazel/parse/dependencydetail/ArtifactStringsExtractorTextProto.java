@@ -30,6 +30,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.synopsys.integration.detectable.detectable.executable.ExecutableRunnerException;
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRule;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelVariableSubstitutor;
 import com.synopsys.integration.exception.IntegrationException;
@@ -57,7 +58,14 @@ public class ArtifactStringsExtractorTextProto implements  ArtifactStringsExtrac
     @Override
     public Optional<List<String>> extractArtifactStrings(final String bazelExternalId, final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated) {
         final List<String> dependencyDetailsQueryArgs = deriveDependencyDetailsQueryArgs(fullRule, bazelExternalId);
-        final Optional<String> textProto = bazelDetailsQueryExecutor.executeDependencyDetailsQuery(workspaceDir, bazelExe, fullRule, dependencyDetailsQueryArgs, exceptionsGenerated);
+        final Optional<String> textProto;
+        try {
+            textProto = bazelDetailsQueryExecutor.executeDependencyDetailsQuery(workspaceDir, bazelExe, dependencyDetailsQueryArgs);
+        } catch (ExecutableRunnerException e) {
+            logger.debug(String.format("Error running dependency details query for textproto: bazel returned an error when run with args: %s: %s", dependencyDetailsQueryArgs, e.getMessage()));
+            exceptionsGenerated.put(fullRule, e);
+            return Optional.empty();
+        }
         if (!textProto.isPresent()) {
             return Optional.empty();
         }

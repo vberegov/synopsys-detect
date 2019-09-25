@@ -24,7 +24,6 @@ package com.synopsys.integration.detectable.detectables.bazel.parse.dependencyde
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -33,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import com.synopsys.integration.detectable.detectable.executable.ExecutableOutput;
 import com.synopsys.integration.detectable.detectable.executable.ExecutableRunner;
 import com.synopsys.integration.detectable.detectable.executable.ExecutableRunnerException;
-import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionFullRule;
 
 public class BazelDetailsQueryExecutor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -44,19 +42,10 @@ public class BazelDetailsQueryExecutor {
         this.executableRunner = executableRunner;
     }
 
-    public Optional<String> executeDependencyDetailsQuery(File workspaceDir, File bazelExe, final BazelExternalIdExtractionFullRule fullRule, final List<String> dependencyDetailsQueryArgs,
-        final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated) {
-        ExecutableOutput dependencyDetailsQueryResults = null;
-        try {
-            dependencyDetailsQueryResults = executableRunner.execute(workspaceDir, bazelExe, dependencyDetailsQueryArgs);
-        } catch (ExecutableRunnerException e) {
-            logger.debug(String.format("Error running dependency details query: bazel returned an error when run with args: %s: %s", dependencyDetailsQueryArgs, e.getMessage()));
-            exceptionsGenerated.put(fullRule, e);
-            return Optional.empty();
-        }
+    public Optional<String> executeDependencyDetailsQuery(File workspaceDir, File bazelExe, final List<String> dependencyDetailsQueryArgs) throws ExecutableRunnerException {
+        ExecutableOutput dependencyDetailsQueryResults = executableRunner.execute(workspaceDir, bazelExe, dependencyDetailsQueryArgs);
         final int dependencyDetailsQueryReturnCode = dependencyDetailsQueryResults.getReturnCode();
         logger.debug(String.format("Bazel targetDependencieDetailsQuery returned %d", dependencyDetailsQueryReturnCode));
-
         final String queryCmdOutput = dependencyDetailsQueryResults.getStandardOutput();
         return Optional.of(queryCmdOutput);
     }
