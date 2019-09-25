@@ -54,30 +54,47 @@ public class BazelExternalIdExtractionFullRule extends Stringable {
     // Usually: ":"
     private final String artifactStringSeparatorRegex;
 
-    // Normal use case is to use RuleConverter.simpleToFull() to construct BazelExternalIdExtractionFullRule, not this ctor
-    public BazelExternalIdExtractionFullRule(final List<String> targetDependenciesQueryBazelCmdArguments, final List<SearchReplacePattern> dependencyToBazelExternalIdTransforms,
+    // For rules that produce XML output
+    // Normal use case is to use RuleConverter.simpleToFull() to construct BazelExternalIdExtractionFullRule, not a ctor
+    public BazelExternalIdExtractionFullRule(final List<String> targetDependenciesQueryBazelCmdArguments,
+        final List<SearchReplacePattern> dependencyToBazelExternalIdTransforms,
         final List<String> dependencyDetailsXmlQueryBazelCmdArguments,
         final String xPathQuery, final String ruleElementValueAttrName,
-
-        final List<String> dependencyDetailsTextProtoQueryBazelCmdArguments,
-        final String pathToAttributeObjectList,
-        final String gavObjectName,
-        final String gavFieldName,
-
         final String artifactStringSeparatorRegex) {
+
         this.targetDependenciesQueryBazelCmdArguments = targetDependenciesQueryBazelCmdArguments;
         this.dependencyToBazelExternalIdTransforms = dependencyToBazelExternalIdTransforms;
         this.dependencyDetailsXmlQueryBazelCmdArguments = dependencyDetailsXmlQueryBazelCmdArguments;
         this.xPathQuery = xPathQuery;
         this.ruleElementValueAttrName = ruleElementValueAttrName;
+        this.dependencyDetailsTextProtoQueryBazelCmdArguments = null;
+        this.pathToAttributeObjectList = null;
+        this.gavObjectName = null;
+        this.gavFieldName = null;
+        this.artifactStringSeparatorRegex = artifactStringSeparatorRegex;
+    }
 
+    // For rules that produce textproto output
+    // Normal use case is to use RuleConverter.simpleToFull() to construct BazelExternalIdExtractionFullRule, not a ctor
+    public BazelExternalIdExtractionFullRule(final List<String> targetDependenciesQueryBazelCmdArguments, final List<SearchReplacePattern> dependencyToBazelExternalIdTransforms,
+        final List<String> dependencyDetailsTextProtoQueryBazelCmdArguments,
+        final String pathToAttributeObjectList,
+        final String gavObjectName,
+        final String gavFieldName,
+        final String artifactStringSeparatorRegex) {
+
+        this.targetDependenciesQueryBazelCmdArguments = targetDependenciesQueryBazelCmdArguments;
+        this.dependencyToBazelExternalIdTransforms = dependencyToBazelExternalIdTransforms;
+        this.dependencyDetailsXmlQueryBazelCmdArguments = null;
+        this.xPathQuery = null;
+        this.ruleElementValueAttrName = null;
         this.dependencyDetailsTextProtoQueryBazelCmdArguments = dependencyDetailsTextProtoQueryBazelCmdArguments;
         this.pathToAttributeObjectList = pathToAttributeObjectList;
         this.gavObjectName = gavObjectName;
         this.gavFieldName = gavFieldName;
-
         this.artifactStringSeparatorRegex = artifactStringSeparatorRegex;
     }
+
 
     public List<String> getTargetDependenciesQueryBazelCmdArguments() {
         return targetDependenciesQueryBazelCmdArguments;
