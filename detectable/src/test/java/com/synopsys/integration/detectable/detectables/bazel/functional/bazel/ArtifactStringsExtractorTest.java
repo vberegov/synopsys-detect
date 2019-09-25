@@ -47,15 +47,16 @@ public class ArtifactStringsExtractorTest {
         Mockito.when(parser.parseStringValuesWithXPath(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(Arrays.asList(BAZEL_EXTERNAL_ID_GUAVA));
         final File workspaceDir = Mockito.mock(File.class);
         final String bazelTarget = "//:ProjectRunner";
-        final ArtifactStringsExtractor artifactStringsExtractor = new ArtifactStringsExtractorXml(bazelDetailsQueryExecutor, bazelExe, parser,
-            workspaceDir, bazelTarget);
-
         final BazelExternalIdExtractionFullRuleJsonProcessor ruleJsonProcessor = new BazelExternalIdExtractionFullRuleJsonProcessor(new Gson());
         final List<BazelExternalIdExtractionFullRule> fullRules = ruleJsonProcessor.load(new File("src/test/resources/detectables/functional/bazel/full_default.rules"));
+        final ArtifactStringsExtractor artifactStringsExtractor = new ArtifactStringsExtractorXml(bazelDetailsQueryExecutor, bazelExe, parser,
+            workspaceDir, bazelTarget, fullRules.get(0));
+
+
         final String bazelExternalId = "//external:com_google_guava_guava";
         final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated = new HashMap<>();
 
-        final Optional<List<String>> artifactStrings = artifactStringsExtractor.extractArtifactStrings(fullRules.get(0), bazelExternalId, exceptionsGenerated);
+        final Optional<List<String>> artifactStrings = artifactStringsExtractor.extractArtifactStrings(bazelExternalId, exceptionsGenerated);
 
         assertTrue(artifactStrings.isPresent());
         assertEquals(1, artifactStrings.get().size());
@@ -73,15 +74,15 @@ public class ArtifactStringsExtractorTest {
         Mockito.when(parser.parseStringValuesFromTextProto(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(Arrays.asList(BAZEL_EXTERNAL_ID_GUAVA));
         final File workspaceDir = Mockito.mock(File.class);
         final String bazelTarget = "//:ProjectRunner";
-        final ArtifactStringsExtractor artifactStringsExtractor = new ArtifactStringsExtractorTextProto(bazelDetailsQueryExecutor, bazelExe, parser,
-            workspaceDir, bazelTarget);
-
         final BazelExternalIdExtractionFullRuleJsonProcessor ruleJsonProcessor = new BazelExternalIdExtractionFullRuleJsonProcessor(new Gson());
         final List<BazelExternalIdExtractionFullRule> fullRules = ruleJsonProcessor.load(new File("src/test/resources/detectables/functional/bazel/full_cquery.rules"));
+        final ArtifactStringsExtractor artifactStringsExtractor = new ArtifactStringsExtractorTextProto(bazelDetailsQueryExecutor, bazelExe, parser,
+            workspaceDir, bazelTarget, fullRules.get(0));
+
         final String bazelExternalId = "//external:com_google_guava_guava";
         final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated = new HashMap<>();
 
-        final Optional<List<String>> artifactStrings = artifactStringsExtractor.extractArtifactStrings(fullRules.get(0), bazelExternalId, exceptionsGenerated);
+        final Optional<List<String>> artifactStrings = artifactStringsExtractor.extractArtifactStrings(bazelExternalId, exceptionsGenerated);
 
         assertTrue(artifactStrings.isPresent());
         assertEquals(1, artifactStrings.get().size());

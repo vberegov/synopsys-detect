@@ -46,18 +46,20 @@ public class ArtifactStringsExtractorXml implements ArtifactStringsExtractor {
     private final File workspaceDir;
     private final String bazelTarget;
     private final BazelQueryXmlOutputParser parser;
+    private final BazelExternalIdExtractionFullRule fullRule;
 
     public ArtifactStringsExtractorXml(final BazelDetailsQueryExecutor bazelDetailsQueryExecutor, final File bazelExe, final BazelQueryXmlOutputParser parser,
-        final File workspaceDir, final String bazelTarget) {
+        final File workspaceDir, final String bazelTarget, final BazelExternalIdExtractionFullRule fullRule) {
         this.bazelDetailsQueryExecutor = bazelDetailsQueryExecutor;
         this.bazelExe = bazelExe;
         this.parser = parser;
         this.workspaceDir = workspaceDir;
         this.bazelTarget = bazelTarget;
+        this.fullRule = fullRule;
     }
 
     @Override
-    public Optional<List<String>> extractArtifactStrings(final BazelExternalIdExtractionFullRule fullRule, final String bazelExternalId,
+    public Optional<List<String>> extractArtifactStrings(final String bazelExternalId,
             final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated) {
         final List<String> dependencyDetailsQueryArgs = deriveDependencyDetailsQueryArgs(fullRule, bazelExternalId);
         final Optional<String> xml = bazelDetailsQueryExecutor.executeDependencyDetailsQuery(workspaceDir, bazelExe, fullRule, dependencyDetailsQueryArgs, exceptionsGenerated);
@@ -68,12 +70,15 @@ public class ArtifactStringsExtractorXml implements ArtifactStringsExtractor {
         return artifactStrings;
     }
 
+    @Override
+    public BazelExternalIdExtractionFullRule getFullRule() {
+        return fullRule;
+    }
+
     private List<String> deriveDependencyDetailsQueryArgs(final BazelExternalIdExtractionFullRule fullRule, final String bazelExternalId) {
         final BazelVariableSubstitutor dependencyVariableSubstitutor = new BazelVariableSubstitutor(bazelTarget, bazelExternalId);
         return dependencyVariableSubstitutor.substitute(fullRule.getDependencyDetailsXmlQueryBazelCmdArguments());
     }
-
-
 
     private Optional<List<String>> parseArtifactStringsFromXml(final BazelExternalIdExtractionFullRule fullRule, final String xml,
         final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated) {

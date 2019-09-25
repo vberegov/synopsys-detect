@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,25 +46,20 @@ public class BazelExternalIdGenerator {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ExecutableRunner executableRunner;
     private final String bazelExe;
-    private final ArtifactStringsExtractor artifactStringsExtractorXml;
-    private final ArtifactStringsExtractor artifactStringsExtractorTextProto;
     private final File workspaceDir;
     private final String bazelTarget;
     private final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated = new HashMap<>();
 
     public BazelExternalIdGenerator(final ExecutableRunner executableRunner, final String bazelExe,
-        final ArtifactStringsExtractor artifactStringsExtractorXml,
-        final ArtifactStringsExtractor artifactStringsExtractorTextProto,
         final File workspaceDir, final String bazelTarget) {
         this.executableRunner = executableRunner;
         this.bazelExe = bazelExe;
-        this.artifactStringsExtractorXml = artifactStringsExtractorXml;
-        this.artifactStringsExtractorTextProto = artifactStringsExtractorTextProto;
         this.workspaceDir = workspaceDir;
         this.bazelTarget = bazelTarget;
     }
 
-    public List<BazelExternalId> generate(final BazelExternalIdExtractionFullRule fullRule) {
+    public List<BazelExternalId> generate(final ArtifactStringsExtractor artifactStringsExtractor) {
+        final BazelExternalIdExtractionFullRule fullRule = artifactStringsExtractor.getFullRule();
         final List<BazelExternalId> projectExternalIds = new ArrayList<>();
         final List<String> dependencyListQueryArgs = deriveDependencyListQueryArgs(fullRule);
         Optional<String[]> rawDependencies = executeDependencyListQuery(fullRule, dependencyListQueryArgs);
@@ -73,8 +67,8 @@ public class BazelExternalIdGenerator {
             return projectExternalIds;
         }
         for (final String rawDependency : rawDependencies.get()) {
-            String bazelExternalId = transformRawDependencyToBazelExternalId(fullRule, rawDependency);
-            final Optional<List<String>> artifactStrings = extractArtifactDetails(fullRule, bazelExternalId);
+            final String bazelExternalId = transformRawDependencyToBazelExternalId(fullRule, rawDependency);
+            final Optional<List<String>> artifactStrings = artifactStringsExtractor.extractArtifactStrings(bazelExternalId, exceptionsGenerated);
             if (!artifactStrings.isPresent()) {
                 return projectExternalIds;
             }
@@ -84,16 +78,6 @@ public class BazelExternalIdGenerator {
             }
         }
         return projectExternalIds;
-    }
-
-    private Optional<List<String>> extractArtifactDetails(final BazelExternalIdExtractionFullRule fullRule, final String bazelExternalId) {
-        final Optional<List<String>> artifactStrings;
-        if (fullRule.isXmlRule()) {
-            artifactStrings = artifactStringsExtractorXml.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
-        } else {
-            artifactStrings = artifactStringsExtractorTextProto.extractArtifactStrings(fullRule, bazelExternalId, exceptionsGenerated);
-        }
-        return artifactStrings;
     }
 
     public boolean isErrors() {

@@ -30,6 +30,8 @@ import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternal
 
 public interface ArtifactStringsExtractor {
 
-    Optional<List<String>> extractArtifactStrings(final BazelExternalIdExtractionFullRule fullRule, final String bazelExternalId,
+    Optional<List<String>> extractArtifactStrings(final String bazelExternalId,
         final Map<BazelExternalIdExtractionFullRule, Exception> exceptionsGenerated);
+
+    BazelExternalIdExtractionFullRule getFullRule();
 }

@@ -40,6 +40,7 @@ import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternal
 import com.synopsys.integration.detectable.detectables.bazel.model.BazelExternalIdExtractionSimpleRules;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelCodeLocationBuilder;
 import com.synopsys.integration.detectable.detectables.bazel.parse.BazelExternalIdGenerator;
+import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractorFactory;
 import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.ArtifactStringsExtractorTextProto;
 import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.BazelQueryTextProtoOutputParser;
 import com.synopsys.integration.detectable.detectables.bazel.parse.dependencydetail.BazelQueryXmlOutputParser;
@@ -86,13 +87,11 @@ public class BazelExtractor {
                     logger.debug(String.format("Using default rules:\n%s", bazelExternalIdExtractionFullRuleJsonProcessor.toJson(fullRules)));
                 }
             }
-            final ArtifactStringsExtractor artifactStringsExtractorXml = new ArtifactStringsExtractorXml(bazelDetailsQueryExecutor, bazelExe, xmlParser, workspaceDir, bazelTarget);
-            final ArtifactStringsExtractor artifactStringsExtractorTextProto = new ArtifactStringsExtractorTextProto(bazelDetailsQueryExecutor, bazelExe, textProtoParser, workspaceDir, bazelTarget);
+            final ArtifactStringsExtractorFactory artifactStringsExtractorFactory = new ArtifactStringsExtractorFactory(bazelExe, workspaceDir, bazelDetailsQueryExecutor, xmlParser, textProtoParser, bazelTarget);
             final BazelExternalIdGenerator externalIdGenerator = new BazelExternalIdGenerator(executableRunner, bazelExe.getAbsolutePath(),
-                artifactStringsExtractorXml,
-                artifactStringsExtractorTextProto,
                 workspaceDir, bazelTarget);
             fullRules.stream()
+                .map(artifactStringsExtractorFactory::createArtifactStringsExtractor)
                 .map(externalIdGenerator::generate)
                 .flatMap(Collection::stream)
                 .forEach(codeLocationGenerator::addDependency);

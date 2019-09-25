@@ -49,33 +49,36 @@ public class BazelExternalIdGeneratorTest {
         final File workspaceDir = new File("notUsed");
         final String bazelTarget = "//testproject:ProjectRunner";
 
+        final BazelExternalIdExtractionSimpleRule simpleRule = new BazelExternalIdExtractionSimpleRule("@.*:jar", "maven_jar",
+            "artifact", ":");
+        final BazelExternalIdExtractionFullRule fullRule = RuleConverter.simpleToFull(simpleRule);
+
         final ArtifactStringsExtractor artifactStringsExtractor = Mockito.mock(ArtifactStringsExtractor.class);
         Optional<List<String>> bazelArtifactStringsCommonsIO = Optional.of(Arrays.asList("org.apache.commons:commons-io:1.3.2"));
         Optional<List<String>> bazelArtifactStringsGuava = Optional.of(Arrays.asList("com.google.guava:guava:18.0"));
-        Mockito.when(artifactStringsExtractor.extractArtifactStrings(Mockito.any(BazelExternalIdExtractionFullRule.class), Mockito.eq("//external:org_apache_commons_commons_io"), Mockito.anyMap()))
+        Mockito.when(artifactStringsExtractor.getFullRule()).thenReturn(fullRule);
+        Mockito.when(artifactStringsExtractor.extractArtifactStrings(Mockito.eq("//external:org_apache_commons_commons_io"), Mockito.anyMap()))
             .thenReturn(bazelArtifactStringsCommonsIO);
-        Mockito.when(artifactStringsExtractor.extractArtifactStrings(Mockito.any(BazelExternalIdExtractionFullRule.class), Mockito.eq("//external:com_google_guava_guava"), Mockito.anyMap()))
+        Mockito.when(artifactStringsExtractor.extractArtifactStrings(Mockito.eq("//external:com_google_guava_guava"), Mockito.anyMap()))
             .thenReturn(bazelArtifactStringsGuava);
-        BazelExternalIdGenerator generator = new BazelExternalIdGenerator(executableRunner, bazelExe, artifactStringsExtractor, artifactStringsExtractor, workspaceDir, bazelTarget);
+        BazelExternalIdGenerator generator = new BazelExternalIdGenerator(executableRunner, bazelExe, workspaceDir, bazelTarget);
 
-        BazelExternalIdExtractionSimpleRule simpleRule = new BazelExternalIdExtractionSimpleRule("@.*:jar", "maven_jar",
-            "artifact", ":");
-        BazelExternalIdExtractionFullRule xPathRule = RuleConverter.simpleToFull(simpleRule);
+
 
         // executableRunner.executeQuietly(workspaceDir, bazelExe, targetOnlyVariableSubstitutor.substitute(xPathRule.getTargetDependenciesQueryBazelCmdArguments()));
         final BazelVariableSubstitutor targetOnlyVariableSubstitutor = new BazelVariableSubstitutor(bazelTarget);
         ExecutableOutput executableOutputQueryForDependencies = new ExecutableOutput(0, "@org_apache_commons_commons_io//jar:jar\n@com_google_guava_guava//jar:jar", "");
-        Mockito.when(executableRunner.execute(workspaceDir, bazelExe, targetOnlyVariableSubstitutor.substitute(xPathRule.getTargetDependenciesQueryBazelCmdArguments()))).thenReturn(executableOutputQueryForDependencies);
+        Mockito.when(executableRunner.execute(workspaceDir, bazelExe, targetOnlyVariableSubstitutor.substitute(fullRule.getTargetDependenciesQueryBazelCmdArguments()))).thenReturn(executableOutputQueryForDependencies);
 
         // executableRunner.executeQuietly(workspaceDir, bazelExe, dependencyVariableSubstitutor.substitute(xPathRule.getDependencyDetailsXmlQueryBazelCmdArguments()));
         final BazelVariableSubstitutor dependencyVariableSubstitutorCommonsIo = new BazelVariableSubstitutor(bazelTarget, "//external:org_apache_commons_commons_io");
         final BazelVariableSubstitutor dependencyVariableSubstitutorGuava = new BazelVariableSubstitutor(bazelTarget, "//external:com_google_guava_guava");
         ExecutableOutput executableOutputQueryCommonsIo = new ExecutableOutput(0, commonsIoXml, "");
         ExecutableOutput executableOutputQueryGuava = new ExecutableOutput(0, guavaXml, "");
-        Mockito.when(executableRunner.execute(workspaceDir, bazelExe, dependencyVariableSubstitutorCommonsIo.substitute(xPathRule.getDependencyDetailsXmlQueryBazelCmdArguments()))).thenReturn(executableOutputQueryCommonsIo);
-        Mockito.when(executableRunner.execute(workspaceDir, bazelExe, dependencyVariableSubstitutorGuava.substitute(xPathRule.getDependencyDetailsXmlQueryBazelCmdArguments()))).thenReturn(executableOutputQueryGuava);
+        Mockito.when(executableRunner.execute(workspaceDir, bazelExe, dependencyVariableSubstitutorCommonsIo.substitute(fullRule.getDependencyDetailsXmlQueryBazelCmdArguments()))).thenReturn(executableOutputQueryCommonsIo);
+        Mockito.when(executableRunner.execute(workspaceDir, bazelExe, dependencyVariableSubstitutorGuava.substitute(fullRule.getDependencyDetailsXmlQueryBazelCmdArguments()))).thenReturn(executableOutputQueryGuava);
 
-        List<BazelExternalId> bazelExternalIds = generator.generate(xPathRule);
+        List<BazelExternalId> bazelExternalIds = generator.generate(artifactStringsExtractor);
         assertEquals(2, bazelExternalIds.size());
         assertEquals("org.apache.commons", bazelExternalIds.get(0).getGroup());
         assertEquals("commons-io", bazelExternalIds.get(0).getArtifact());
