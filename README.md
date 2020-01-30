@@ -26,3 +26,5 @@ For AirGap, please use our [Artifactory](https://repo.blackducksoftware.com/arti
 The latest documentation is [here](https://blackducksoftware.github.io/synopsys-detect/latest/).
 
 Links to other versions can be found [here](https://detect.synopsys.com/docs).
+
+
