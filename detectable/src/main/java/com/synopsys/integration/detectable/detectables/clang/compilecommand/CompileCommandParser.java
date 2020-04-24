@@ -120,7 +120,9 @@ public class CompileCommandParser {
 
     private void processQuotedChar(final ParserState parserState, final char c, final StringBuilder newString) {
         // Currently inside a quoted substring
-        if (!parserState.isLastCharEscapeChar() && (c == SINGLE_QUOTE_CHAR) && !parserState.isDoubleQuoteType()) {
+        if (parserState.isLastCharEscapeChar() && (c == DOUBLE_QUOTE_CHAR) && parserState.isDoubleQuoteType()) {
+            parserState.setInQuotes(false);
+        } else if (!parserState.isLastCharEscapeChar() && (c == SINGLE_QUOTE_CHAR) && !parserState.isDoubleQuoteType()) {
             parserState.setInQuotes(false);
         } else if (!parserState.isLastCharEscapeChar() && (c == DOUBLE_QUOTE_CHAR) && parserState.isDoubleQuoteType()) {
             parserState.setInQuotes(false);
@@ -137,9 +139,16 @@ public class CompileCommandParser {
         if (!parserState.isLastCharEscapeChar() && (c == SINGLE_QUOTE_CHAR)) {
             parserState.setInQuotes(true);
             parserState.setQuoteTypeIsDouble(false);
+            parserState.setQuoteWasEscaped(false);
         } else if (!parserState.isLastCharEscapeChar() && (c == DOUBLE_QUOTE_CHAR)) {
             parserState.setInQuotes(true);
             parserState.setQuoteTypeIsDouble(true);
+            parserState.setQuoteWasEscaped(false);
+        } else if (parserState.isLastCharEscapeChar() && (c == DOUBLE_QUOTE_CHAR)) {
+            parserState.setInQuotes(true);
+            parserState.setQuoteTypeIsDouble(true);
+            parserState.setQuoteWasEscaped(true);
+            newString.append(c);
         } else {
             newString.append(c);
         }
@@ -149,6 +158,7 @@ public class CompileCommandParser {
         private boolean lastCharWasEscapeChar = false;
         private boolean inQuotes = false;
         private boolean quoteTypeIsDouble = false;
+        private boolean quoteWasEscaped = false;
 
         public boolean isLastCharEscapeChar() {
             return lastCharWasEscapeChar;
@@ -162,6 +172,10 @@ public class CompileCommandParser {
             return quoteTypeIsDouble;
         }
 
+        public boolean isQuoteEscaped() {
+            return quoteWasEscaped;
+        }
+
         public void setLastCharWasEscapeChar(final boolean lastCharWasEscapeChar) {
             this.lastCharWasEscapeChar = lastCharWasEscapeChar;
         }
@@ -172,6 +186,10 @@ public class CompileCommandParser {
 
         public void setQuoteTypeIsDouble(final boolean quoteTypeIsDouble) {
             this.quoteTypeIsDouble = quoteTypeIsDouble;
+        }
+
+        public void setQuoteWasEscaped(final boolean quoteWasEscaped) {
+            this.quoteWasEscaped = quoteWasEscaped;
         }
     }
 }
