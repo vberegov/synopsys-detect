@@ -36,14 +36,14 @@ public class DockerProperties {
     private final DockerDetectableOptions dockerDetectableOptions;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public DockerProperties(final DockerDetectableOptions dockerDetectableOptions) {
+    public DockerProperties(DockerDetectableOptions dockerDetectableOptions) {
         this.dockerDetectableOptions = dockerDetectableOptions;
     }
 
-    public void populatePropertiesFile(final File dockerPropertiesFile, final File outputDirectory) throws IOException {
-        final Properties dockerProperties = new Properties();
+    public void populatePropertiesFile(File dockerPropertiesFile, File outputDirectory) throws IOException {
+        Properties dockerProperties = new Properties();
 
-        dockerProperties.setProperty("logging.level.com.synopsys", dockerDetectableOptions.getDockerInspectorLoggingLevel().toString()); //TODO: Verify this .toString works.
+        dockerProperties.setProperty("logging.level.com.synopsys", dockerDetectableOptions.getDockerInspectorLoggingLevel().name());
         dockerProperties.setProperty("upload.bdio", "false");
         dockerProperties.setProperty("output.path", outputDirectory.getAbsolutePath());
         dockerProperties.setProperty("phone.home", "false");
@@ -59,15 +59,15 @@ public class DockerProperties {
             dockerProperties.setProperty("docker.platform.top.layer.id", id);
         });
 
-        final Map<String, String> additionalDockerProperties = dockerDetectableOptions.getAdditionalDockerProperties();
+        Map<String, String> additionalDockerProperties = dockerDetectableOptions.getAdditionalDockerProperties();
         dockerProperties.putAll(additionalDockerProperties);
 
         logger.debug("Contents of application.properties passed to Docker Inspector: " + dockerProperties.toString());
         dockerProperties.store(new FileOutputStream(dockerPropertiesFile), "");
     }
 
-    private File createDir(final File parentDir, final String newDirName) throws IOException {
-        final File newDir = new File(parentDir, newDirName);
+    private File createDir(File parentDir, String newDirName) throws IOException {
+        File newDir = new File(parentDir, newDirName);
         Files.createDirectories(newDir.toPath());
         return newDir;
     }

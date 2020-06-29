@@ -25,7 +25,6 @@ package com.synopsys.integration.detectable.detectables.clang.compilecommand;
 import com.synopsys.integration.util.Stringable;
 
 // Loaded from json via Gson
-// TODO: Can Gson use setter methods?
 public class CompileCommand extends Stringable {
     public String directory = "";
     public String command = "";
