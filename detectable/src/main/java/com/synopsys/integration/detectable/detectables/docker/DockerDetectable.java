@@ -58,8 +58,8 @@ public class DockerDetectable extends Detectable {
     private File bashExe;
     private DockerInspectorInfo dockerInspectorInfo;
 
-    public DockerDetectable(final DetectableEnvironment environment, final DockerInspectorResolver dockerInspectorResolver, final JavaResolver javaResolver, final BashResolver bashResolver, final DockerResolver dockerResolver,
-        final DockerExtractor dockerExtractor, final DockerDetectableOptions dockerDetectableOptions) {
+    public DockerDetectable(DetectableEnvironment environment, DockerInspectorResolver dockerInspectorResolver, JavaResolver javaResolver, BashResolver bashResolver, DockerResolver dockerResolver,
+        DockerExtractor dockerExtractor, DockerDetectableOptions dockerDetectableOptions) {
         super(environment);
         this.javaResolver = javaResolver;
         this.bashResolver = bashResolver;
@@ -93,7 +93,7 @@ public class DockerDetectable extends Detectable {
         File dockerExe;
         try {
             dockerExe = dockerResolver.resolveDocker();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             dockerExe = null;
         }
         if (dockerExe == null) {
@@ -111,11 +111,12 @@ public class DockerDetectable extends Detectable {
     }
 
     @Override
-    public Extraction extract(final ExtractionEnvironment extractionEnvironment) {
-        final String image = dockerDetectableOptions.getSuppliedDockerImage().orElse("");
-        final String imageId = dockerDetectableOptions.getSuppliedDockerImageId().orElse("");
-        final String tar = dockerDetectableOptions.getSuppliedDockerTar().orElse("");
+    public Extraction extract(ExtractionEnvironment extractionEnvironment) {
+        String image = dockerDetectableOptions.getSuppliedDockerImage().orElse("");
+        String imageId = dockerDetectableOptions.getSuppliedDockerImageId().orElse("");
+        String tar = dockerDetectableOptions.getSuppliedDockerTar().orElse("");
+        DockerProperties dockerProperties = new DockerProperties(dockerDetectableOptions);
         return dockerExtractor.extract(environment.getDirectory(), extractionEnvironment.getOutputDirectory(), bashExe, javaExe, image, imageId, tar, dockerInspectorInfo,
-            new DockerProperties(dockerDetectableOptions)); //TODO, doesn't feel right to construct properties here. -jp
+            dockerProperties);
     }
 }
