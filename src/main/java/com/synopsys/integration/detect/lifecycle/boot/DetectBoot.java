@@ -109,6 +109,7 @@ import com.synopsys.integration.detect.workflow.file.DirectoryManager;
 import com.synopsys.integration.detect.workflow.profiling.DetectorProfiler;
 import com.synopsys.integration.detect.workflow.report.writer.InfoLogReportWriter;
 import com.synopsys.integration.detect.workflow.status.DetectIssue;
+import com.synopsys.integration.detect.workflow.status.DetectIssueId;
 import com.synopsys.integration.detect.workflow.status.DetectIssueType;
 import com.synopsys.integration.detectable.Detectable;
 import com.synopsys.integration.detectable.detectable.annotation.DetectableInfo;
@@ -343,7 +344,7 @@ public class DetectBoot {
                 String deprecationMessage = deprecationInfo.getDeprecationText();
 
                 deprecationMessages.put(property.getKey(), new ArrayList<>(Collections.singleton(deprecationMessage)));
-                DetectIssue.publish(eventSystem, DetectIssueType.DEPRECATION, property.getKey(), "\t" + deprecationMessage);
+                DetectIssue.publish(eventSystem, DetectIssueType.DEPRECATION, DetectIssueId.DEPRECATION, property.getKey(), "\t" + deprecationMessage);
 
                 if (detectInfo.getDetectMajorVersion() >= deprecationInfo.getFailInVersion().getIntValue()) {
                     usedFailureProperties.add(property);

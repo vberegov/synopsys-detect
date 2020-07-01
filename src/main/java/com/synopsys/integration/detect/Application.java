@@ -59,6 +59,7 @@ import com.synopsys.integration.detect.workflow.file.DirectoryManager;
 import com.synopsys.integration.detect.workflow.report.ReportManager;
 import com.synopsys.integration.detect.workflow.report.output.FormattedOutputManager;
 import com.synopsys.integration.detect.workflow.status.DetectIssue;
+import com.synopsys.integration.detect.workflow.status.DetectIssueId;
 import com.synopsys.integration.detect.workflow.status.DetectIssueType;
 import com.synopsys.integration.detect.workflow.status.DetectStatusManager;
 import com.synopsys.integration.log.Slf4jIntLogger;
@@ -71,7 +72,7 @@ public class Application implements ApplicationRunner {
     private final ConfigurableEnvironment environment;
 
     @Autowired
-    public Application(final ConfigurableEnvironment environment) {
+    public Application(ConfigurableEnvironment environment) {
         this.environment = environment;
         environment.setIgnoreUnresolvableNestedPlaceholders(true);
     }
@@ -80,37 +81,37 @@ public class Application implements ApplicationRunner {
         return SHOULD_EXIT;
     }
 
-    public static void setShouldExit(final boolean shouldExit) {
+    public static void setShouldExit(boolean shouldExit) {
         SHOULD_EXIT = shouldExit;
     }
 
-    public static void main(final String[] args) {
-        final SpringApplicationBuilder builder = new SpringApplicationBuilder(Application.class);
+    public static void main(String[] args) {
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(Application.class);
         builder.logStartupInfo(false);
         builder.run(args);
     }
 
     @Override
-    public void run(final ApplicationArguments applicationArguments) {
-        final long startTime = System.currentTimeMillis();
+    public void run(ApplicationArguments applicationArguments) {
+        long startTime = System.currentTimeMillis();
 
         //Events, Status and Exit Codes are required even if boot fails.
-        final EventSystem eventSystem = new EventSystem();
-        final DetectStatusManager statusManager = new DetectStatusManager(eventSystem);
+        EventSystem eventSystem = new EventSystem();
+        DetectStatusManager statusManager = new DetectStatusManager(eventSystem);
 
-        final ExitCodeUtility exitCodeUtility = new ExitCodeUtility();
-        final ExitCodeManager exitCodeManager = new ExitCodeManager(eventSystem, exitCodeUtility);
+        ExitCodeUtility exitCodeUtility = new ExitCodeUtility();
+        ExitCodeManager exitCodeManager = new ExitCodeManager(eventSystem, exitCodeUtility);
 
-        final ReportManager reportManager = ReportManager.createDefault(eventSystem);
-        final FormattedOutputManager formattedOutputManager = new FormattedOutputManager(eventSystem);
+        ReportManager reportManager = ReportManager.createDefault(eventSystem);
+        FormattedOutputManager formattedOutputManager = new FormattedOutputManager(eventSystem);
 
         //Before boot even begins, we create a new Spring context for Detect to work within.
         logger.debug("Initializing detect.");
-        final DetectRun detectRun = DetectRun.createDefault();
-        final DetectContext detectContext = new DetectContext(detectRun);
+        DetectRun detectRun = DetectRun.createDefault();
+        DetectContext detectContext = new DetectContext(detectRun);
 
-        final Gson gson = BlackDuckServicesFactory.createDefaultGsonBuilder().setPrettyPrinting().create();
-        final DetectInfo detectInfo = DetectInfoUtility.createDefaultDetectInfo();
+        Gson gson = BlackDuckServicesFactory.createDefaultGsonBuilder().setPrettyPrinting().create();
+        DetectInfo detectInfo = DetectInfoUtility.createDefaultDetectInfo();
         detectContext.registerBean(gson);
         detectContext.registerBean(detectInfo);
 
@@ -120,24 +121,24 @@ public class Application implements ApplicationRunner {
 
         try {
             logger.debug("Detect boot begin.");
-            final DetectBoot detectBoot = new DetectBoot(new DetectBootFactory());
+            DetectBoot detectBoot = new DetectBoot(new DetectBootFactory());
             detectBootResultOptional = Optional.ofNullable(detectBoot.boot(detectRun, applicationArguments.getSourceArgs(), environment, eventSystem, detectContext));
             logger.debug("Detect boot completed.");
-        } catch (final Exception e) {
+        } catch (Exception e) {
             logger.error("Detect boot failed.");
             exitCodeManager.requestExitCode(e);
         }
         if (detectBootResultOptional.isPresent()) {
-            final DetectBootResult detectBootResult = detectBootResultOptional.get();
+            DetectBootResult detectBootResult = detectBootResultOptional.get();
             if (detectBootResult.getBootType() == DetectBootResult.BootType.RUN && detectBootResult.getProductRunData().isPresent()) {
                 logger.debug("Detect will attempt to run.");
-                final ProductRunData productRunData = detectBootResult.getProductRunData().get();
-                final RunManager runManager = new RunManager(detectContext);
+                ProductRunData productRunData = detectBootResult.getProductRunData().get();
+                RunManager runManager = new RunManager(detectContext);
                 try {
                     logger.debug("Detect run begin: " + detectRun.getRunId());
                     runManager.run(productRunData);
                     logger.debug("Detect run completed.");
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     if (e.getMessage() != null) {
                         logger.error("Detect run failed: " + e.getMessage());
                     } else {
@@ -149,11 +150,11 @@ public class Application implements ApplicationRunner {
             } else {
                 logger.debug("Detect will NOT attempt to run.");
                 detectBootResult.getException().ifPresent(exitCodeManager::requestExitCode);
-                detectBootResult.getException().ifPresent(e -> DetectIssue.publish(eventSystem, DetectIssueType.EXCEPTION, e.getMessage()));
+                detectBootResult.getException().ifPresent(e -> DetectIssue.publish(eventSystem, DetectIssueType.EXCEPTION, DetectIssueId.MISSING_PRODUCT_RUN_DATA, e.getMessage()));
             }
 
             if (detectBootResult.getDetectConfiguration().isPresent()) {
-                final PropertyConfiguration detectConfiguration = detectBootResult.getDetectConfiguration().get();
+                PropertyConfiguration detectConfiguration = detectBootResult.getDetectConfiguration().get();
                 printOutput = !detectConfiguration.getValueOrDefault(DetectProperties.Companion.getDETECT_SUPPRESS_RESULTS_OUTPUT());
                 shouldForceSuccess = detectConfiguration.getValueOrDefault(DetectProperties.Companion.getDETECT_FORCE_SUCCESS());
             }
@@ -180,7 +181,7 @@ public class Application implements ApplicationRunner {
 
         try {
             logger.debug("Detect shutdown begin.");
-            final ShutdownManager shutdownManager = new ShutdownManager();
+            ShutdownManager shutdownManager = new ShutdownManager();
             Bdo<DetectBootResult> detectBootResult = Bdo.of(detectBootResultOptional);
             shutdownManager.shutdown(
                 detectBootResult.flatMap(DetectBootResult::getProductRunData).toOptional(),
@@ -189,7 +190,7 @@ public class Application implements ApplicationRunner {
                 detectBootResult.flatMap(DetectBootResult::getDirectoryManager).toOptional(),
                 detectBootResult.flatMap(DetectBootResult::getDiagnosticSystem).toOptional());
             logger.debug("Detect shutdown completed.");
-        } catch (final Exception e) {
+        } catch (Exception e) {
             logger.error("Detect shutdown failed.");
             exitCodeManager.requestExitCode(e);
         }
@@ -202,7 +203,7 @@ public class Application implements ApplicationRunner {
         }
 
         //Find the final (as requested) exit code
-        final ExitCodeType finalExitCode = exitCodeManager.getWinningExitCode();
+        ExitCodeType finalExitCode = exitCodeManager.getWinningExitCode();
 
         //Print detect's status
         if (printOutput) {
@@ -210,7 +211,7 @@ public class Application implements ApplicationRunner {
         }
 
         //Print duration of run
-        final long endTime = System.currentTimeMillis();
+        long endTime = System.currentTimeMillis();
         logger.info(String.format("Detect duration: %s", DurationFormatUtils.formatPeriod(startTime, endTime, "HH'h' mm'm' ss's' SSS'ms'")));
 
         //Exit with formal exit code

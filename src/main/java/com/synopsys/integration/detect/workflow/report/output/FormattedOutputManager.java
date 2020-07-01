@@ -47,14 +47,14 @@ import com.synopsys.integration.util.NameVersion;
 
 public class FormattedOutputManager {
     private DetectorToolResult detectorToolResult = null;
-    private Set<String> codeLocations = new HashSet<>();
+    private final Set<String> codeLocations = new HashSet<>();
     private NameVersion projectNameVersion = null;
     private final List<Status> statusSummaries = new ArrayList<>();
     private final List<DetectResult> detectResults = new ArrayList<>();
     private final List<DetectIssue> detectIssues = new ArrayList<>();
     private final Map<String, List<File>> unrecognizedPaths = new HashMap<>();
 
-    public FormattedOutputManager(final EventSystem eventSystem) {
+    public FormattedOutputManager(EventSystem eventSystem) {
         eventSystem.registerListener(Event.DetectorsComplete, this::detectorsComplete);
         eventSystem.registerListener(Event.StatusSummary, this::addStatusSummary);
         eventSystem.registerListener(Event.Issue, this::addIssue);
@@ -78,7 +78,7 @@ public class FormattedOutputManager {
                                      .toList();
 
         formattedOutput.issues = Bds.of(detectIssues)
-                                     .map(issue -> new FormattedIssueOutput(issue.getType().name(), issue.getMessages()))
+                                     .map(issue -> new FormattedIssueOutput(issue.getType().name(), issue.getId().name(), issue.getMessages()))
                                      .toList();
 
         if (detectorToolResult != null) {
@@ -94,8 +94,8 @@ public class FormattedOutputManager {
         }
 
         formattedOutput.codeLocations = Bds.of(this.codeLocations)
-                                                .map(FormattedCodeLocationOutput::new)
-                                                .toList();
+                                            .map(FormattedCodeLocationOutput::new)
+                                            .toList();
 
         formattedOutput.unrecognizedPaths = new HashMap<>();
         unrecognizedPaths.keySet().forEach(key -> {
@@ -137,19 +137,19 @@ public class FormattedOutputManager {
         return detectorOutput;
     }
 
-    private void detectorsComplete(final DetectorToolResult detectorToolResult) {
+    private void detectorsComplete(DetectorToolResult detectorToolResult) {
         this.detectorToolResult = detectorToolResult;
     }
 
-    private void codeLocationsAdded(final Collection<String> codeLocations) {
+    private void codeLocationsAdded(Collection<String> codeLocations) {
         this.codeLocations.addAll(codeLocations);
     }
 
-    private void projectNameVersionChosen(final NameVersion nameVersion) {
+    private void projectNameVersionChosen(NameVersion nameVersion) {
         this.projectNameVersion = nameVersion;
     }
 
-    public void addStatusSummary(final Status status) {
+    public void addStatusSummary(Status status) {
         statusSummaries.add(status);
     }
 
@@ -157,11 +157,11 @@ public class FormattedOutputManager {
         detectIssues.add(issue);
     }
 
-    public void addDetectResult(final DetectResult detectResult) {
+    public void addDetectResult(DetectResult detectResult) {
         detectResults.add(detectResult);
     }
 
-    public void addUnrecognizedPaths(final UnrecognizedPaths unrecognizedPaths) {
+    public void addUnrecognizedPaths(UnrecognizedPaths unrecognizedPaths) {
         if (!this.unrecognizedPaths.containsKey(unrecognizedPaths.getGroup())) {
             this.unrecognizedPaths.put(unrecognizedPaths.getGroup(), new ArrayList<>());
         }

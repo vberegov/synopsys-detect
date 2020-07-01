@@ -102,6 +102,7 @@ import com.synopsys.integration.detect.workflow.report.util.ReportConstants;
 import com.synopsys.integration.detect.workflow.result.BlackDuckBomDetectResult;
 import com.synopsys.integration.detect.workflow.result.DetectResult;
 import com.synopsys.integration.detect.workflow.status.DetectIssue;
+import com.synopsys.integration.detect.workflow.status.DetectIssueId;
 import com.synopsys.integration.detect.workflow.status.DetectIssueType;
 import com.synopsys.integration.detect.workflow.status.Status;
 import com.synopsys.integration.detect.workflow.status.StatusType;
@@ -386,7 +387,7 @@ public class RunManager {
                 codeLocationWaitController.addWaitForCreationData(signatureScannerToolResult.getCreationData().get(), eventSystem);
             } else if (signatureScannerToolResult.getResult() != Result.SUCCESS) {
                 eventSystem.publishEvent(Event.StatusSummary, new Status("SIGNATURE_SCAN", StatusType.FAILURE));
-                eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.SIGNATURE_SCANNER, Arrays.asList(signatureScannerToolResult.getResult().toString())));
+                eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.SIGNATURE_SCANNER, DetectIssueId.SIGNATURE_SCAN_FAILED, Arrays.asList(signatureScannerToolResult.getResult().toString())));
             }
             logger.info("Signature scanner actions finished.");
         } else {

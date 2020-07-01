@@ -22,36 +22,16 @@
  */
 package com.synopsys.integration.detect.workflow.status;
 
-import java.util.Arrays;
-import java.util.List;
-
-import com.synopsys.integration.detect.workflow.event.Event;
-import com.synopsys.integration.detect.workflow.event.EventSystem;
-
-public class DetectIssue {
-    public DetectIssueType getType() {
-        return type;
-    }
-
-    public DetectIssueId getId() {
-        return id;
-    }
-
-    public List<String> getMessages() {
-        return messages;
-    }
-
-    private final DetectIssueType type;
-    private final DetectIssueId id;
-    private final List<String> messages;
-
-    public DetectIssue(DetectIssueType type, DetectIssueId id, List<String> messages) {
-        this.type = type;
-        this.id = id;
-        this.messages = messages;
-    }
-
-    public static void publish(EventSystem eventSystem, DetectIssueType type, DetectIssueId id, String... messages) {
-        eventSystem.publishEvent(Event.Issue, new DetectIssue(type, id, Arrays.asList(messages)));
-    }
+public enum DetectIssueId {
+    DEPRECATION, // use of a deprecated property
+    //BLACKDUCK_OPERATION_FORBIDDEN, // HTTP 403 Forbidden
+    DETECTOR_NOT_EXTRACTABLE,
+    DETECTOR_EXTRACTION_FAILED, // I don't yet understand diff between this and next
+    DETECTOR_FAILED, // a detector failed
+    SIGNATURE_SCAN_FAILED, // returned exit code
+    SIGNATURE_SCAN_MISSING_RESULTS, // results for target absent from sig scanner output
+    SIGNATURE_SCAN_ERROR_LOGGED, // sig scanner logged error(s) for target
+    BINARY_SCAN_MISSING_FILE, // File does not exist or is not readable
+    BINARY_SCAN_UPLOAD_FAILED,
+    MISSING_PRODUCT_RUN_DATA, // Preconditions for neither Black Duck nor Polaris functionality have been met
 }

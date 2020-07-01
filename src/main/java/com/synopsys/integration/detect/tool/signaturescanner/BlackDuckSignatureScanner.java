@@ -50,6 +50,7 @@ import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
 import com.synopsys.integration.detect.workflow.file.DirectoryManager;
 import com.synopsys.integration.detect.workflow.status.DetectIssue;
+import com.synopsys.integration.detect.workflow.status.DetectIssueId;
 import com.synopsys.integration.detect.workflow.status.DetectIssueType;
 import com.synopsys.integration.detect.workflow.status.SignatureScanStatus;
 import com.synopsys.integration.detect.workflow.status.StatusType;
@@ -140,10 +141,11 @@ public class BlackDuckSignatureScanner {
         }
 
         String scanTargetPath = signatureScannerReport.getSignatureScanPath().getTargetCanonicalPath();
-        if (signatureScannerReport.hasOutput()) {
+        // TODO I'm pretty sure this should be !hasOutput(). Checking w/ JM... - SB
+        if (!signatureScannerReport.hasOutput()) {
             String errorMessage = String.format("Scanning target %s was never scanned by the BlackDuck CLI.", scanTargetPath);
             logger.info(errorMessage);
-            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.SIGNATURE_SCANNER, Collections.singletonList(errorMessage)));
+            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.SIGNATURE_SCANNER, DetectIssueId.SIGNATURE_SCAN_MISSING_RESULTS, Collections.singletonList(errorMessage)));
         } else {
             String errorMessage = signatureScannerReport.getErrorMessage()
                                       .map(message -> String.format("Scanning target %s failed: %s", scanTargetPath, message))
@@ -151,7 +153,7 @@ public class BlackDuckSignatureScanner {
             logger.error(errorMessage);
             signatureScannerReport.getException().ifPresent(exception -> logger.debug(errorMessage, exception));
 
-            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.SIGNATURE_SCANNER, Collections.singletonList(errorMessage)));
+            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.SIGNATURE_SCANNER, DetectIssueId.SIGNATURE_SCAN_FAILED, Collections.singletonList(errorMessage)));
         }
 
         eventSystem.publishEvent(Event.StatusSummary, new SignatureScanStatus(signatureScannerReport.getSignatureScanPath().getTargetCanonicalPath(), StatusType.FAILURE));
