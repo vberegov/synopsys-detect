@@ -39,6 +39,10 @@ import com.synopsys.integration.blackduck.service.BlackDuckServicesFactory;
 import com.synopsys.integration.blackduck.service.UserGroupService;
 import com.synopsys.integration.detect.exception.DetectUserFriendlyException;
 import com.synopsys.integration.detect.exitcode.ExitCodeType;
+import com.synopsys.integration.detect.workflow.event.EventSystem;
+import com.synopsys.integration.detect.workflow.status.DetectIssue;
+import com.synopsys.integration.detect.workflow.status.DetectIssueId;
+import com.synopsys.integration.detect.workflow.status.DetectIssueType;
 import com.synopsys.integration.exception.IntegrationException;
 import com.synopsys.integration.log.SilentIntLogger;
 import com.synopsys.integration.log.Slf4jIntLogger;
@@ -47,40 +51,43 @@ import com.synopsys.integration.rest.client.ConnectionResult;
 public class BlackDuckConnectivityChecker {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public BlackDuckConnectivityResult determineConnectivity(final BlackDuckServerConfig blackDuckServerConfig)
+    public BlackDuckConnectivityResult determineConnectivity(EventSystem eventSystem, BlackDuckServerConfig blackDuckServerConfig)
         throws DetectUserFriendlyException {
 
         logger.debug("Detect will check communication with the Black Duck server.");
 
-        final ConnectionResult connectionResult = blackDuckServerConfig.attemptConnection(new SilentIntLogger());
+        ConnectionResult connectionResult = blackDuckServerConfig.attemptConnection(new SilentIntLogger());
 
         if (connectionResult.isFailure()) {
             logger.error("Failed to connect to the Black Duck server");
-            logger.debug(String.format("The Black Duck server responded with a status code of %d", connectionResult.getHttpStatusCode()));
-            return BlackDuckConnectivityResult.failure(connectionResult.getFailureMessage().orElse("Could not reach the Black Duck server or the credentials were invalid."));
+            String httpStatusCodeMsg = String.format("The Black Duck server responded with a status code of %d", connectionResult.getHttpStatusCode());
+            logger.debug(httpStatusCodeMsg);
+            String msg = connectionResult.getFailureMessage().orElse("Could not reach the Black Duck server or the credentials were invalid.");
+            DetectIssue.publish(eventSystem, DetectIssueType.EXCEPTION, DetectIssueId.BLACKDUCK_FAILED_TO_CONNECT, msg, httpStatusCodeMsg);
+            return BlackDuckConnectivityResult.failure(msg);
         }
 
         logger.info("Connection to the Black Duck server was successful.");
 
-        final BlackDuckServicesFactory blackDuckServicesFactory = blackDuckServerConfig.createBlackDuckServicesFactory(new Slf4jIntLogger(logger));
+        BlackDuckServicesFactory blackDuckServicesFactory = blackDuckServerConfig.createBlackDuckServicesFactory(new Slf4jIntLogger(logger));
 
         try {
-            final BlackDuckService blackDuckService = blackDuckServicesFactory.createBlackDuckService();
-            final CurrentVersionView currentVersion = blackDuckService.getResponse(ApiDiscovery.CURRENT_VERSION_LINK_RESPONSE);
+            BlackDuckService blackDuckService = blackDuckServicesFactory.createBlackDuckService();
+            CurrentVersionView currentVersion = blackDuckService.getResponse(ApiDiscovery.CURRENT_VERSION_LINK_RESPONSE);
 
             logger.info(String.format("Successfully connected to Black Duck (version %s)!", currentVersion.getVersion()));
 
-            final UserView userView = blackDuckService.getResponse(ApiDiscovery.CURRENT_USER_LINK_RESPONSE);
+            UserView userView = blackDuckService.getResponse(ApiDiscovery.CURRENT_USER_LINK_RESPONSE);
             logger.debug("Connected as: " + userView.getUserName());
 
-            final UserGroupService userGroupService = blackDuckServicesFactory.createUserGroupService();
-            final List<RoleAssignmentView> response = userGroupService.getRolesForUser(userView);
+            UserGroupService userGroupService = blackDuckServicesFactory.createUserGroupService();
+            List<RoleAssignmentView> response = userGroupService.getRolesForUser(userView);
             logger.debug("Roles: " + response.stream().map(RoleAssignmentView::getName).distinct().collect(Collectors.joining(", ")));
 
-            final List<UserGroupView> groups = blackDuckService.getAllResponses(userView.getFirstLink("usergroups").get(), UserGroupView.class);
+            List<UserGroupView> groups = blackDuckService.getAllResponses(userView.getFirstLink("usergroups").get(), UserGroupView.class);
             logger.debug("Group: " + groups.stream().map(UserGroupView::getName).distinct().collect(Collectors.joining(", ")));
 
-        } catch (final IntegrationException e) {
+        } catch (IntegrationException e) {
             throw new DetectUserFriendlyException("Could not determine which version of Black Duck detect connected to or which user is connecting.", e, ExitCodeType.FAILURE_BLACKDUCK_CONNECTIVITY);
         }
 

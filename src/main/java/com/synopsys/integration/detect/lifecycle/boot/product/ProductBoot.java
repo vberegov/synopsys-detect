@@ -43,9 +43,6 @@ import com.synopsys.integration.detect.workflow.blackduck.analytics.AnalyticsCon
 import com.synopsys.integration.detect.workflow.blackduck.analytics.AnalyticsSetting;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
 import com.synopsys.integration.detect.workflow.phonehome.PhoneHomeManager;
-import com.synopsys.integration.detect.workflow.status.DetectIssue;
-import com.synopsys.integration.detect.workflow.status.DetectIssueId;
-import com.synopsys.integration.detect.workflow.status.DetectIssueType;
 import com.synopsys.integration.exception.IntegrationException;
 import com.synopsys.integration.polaris.common.configuration.PolarisServerConfig;
 
@@ -96,7 +93,7 @@ public class ProductBoot {
 
         logger.debug("Will boot Black Duck product.");
         BlackDuckServerConfig blackDuckServerConfig = productBootFactory.createBlackDuckServerConfig();
-        BlackDuckConnectivityResult blackDuckConnectivityResult = blackDuckConnectivityChecker.determineConnectivity(blackDuckServerConfig);
+        BlackDuckConnectivityResult blackDuckConnectivityResult = blackDuckConnectivityChecker.determineConnectivity(eventSystem, blackDuckServerConfig);
 
         if (blackDuckConnectivityResult.isSuccessfullyConnected()) {
             BlackDuckServicesFactory blackDuckServicesFactory = blackDuckConnectivityResult.getBlackDuckServicesFactory();
@@ -114,7 +111,6 @@ public class ProductBoot {
                 logger.info(String.format("%s is set to 'true' so Detect will simply disable the Black Duck product.", DetectProperties.Companion.getDETECT_IGNORE_CONNECTION_FAILURES().getName()));
                 return null;
             } else {
-                DetectIssue.publish(eventSystem, DetectIssueType.EXCEPTION, DetectIssueId.BLACKDUCK_FAILED_TO_CONNECT, blackDuckConnectivityResult.getFailureReason());
                 throw new DetectUserFriendlyException("Could not communicate with Black Duck: " + blackDuckConnectivityResult.getFailureReason(), ExitCodeType.FAILURE_BLACKDUCK_CONNECTIVITY);
             }
         }
