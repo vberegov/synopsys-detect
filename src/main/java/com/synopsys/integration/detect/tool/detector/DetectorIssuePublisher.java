@@ -55,38 +55,39 @@ public class DetectorIssuePublisher {
             List<DetectorEvaluation> extractableFailedButFallback = notExtractable.stream().filter(DetectorEvaluation::isFallbackExtractable).collect(Collectors.toList());
             //List<DetectorEvaluation> extractable_failed_but_skipped = notExtractable.stream().filter(it -> it.isPreviousExtractable()).collect(Collectors.toList());
 
-            List<String> messages = new ArrayList<>();
-
-            addFallbackIfNotEmpty(messages, "\tUsed Fallback: ", spacer, extractableFailedButFallback, DetectorEvaluation::getExtractabilityMessage);
+            addFallbackIfNotEmpty(eventSystem, tree.getDirectory().toString(), DetectIssueId.DETECTOR_FALLBACK_USED, "\tUsed Fallback: ", spacer, extractableFailedButFallback, DetectorEvaluation::getExtractabilityMessage);
             //writeEvaluationsIfNotEmpty(writer, "\tSkipped: ", spacer, extractable_failed_but_skipped, DetectorEvaluation::getExtractabilityMessage);
-            addIfNotEmpty(messages, "\tNot Extractable: ", spacer, extractableFailed, DetectorEvaluation::getExtractabilityMessage);
-            addIfNotEmpty(messages, "\tFailure: ", spacer, failed, detectorEvaluation -> detectorEvaluation.getExtraction().getDescription());
-            addIfNotEmpty(messages, "\tException: ", spacer, excepted, detectorEvaluation -> ExceptionUtil.oneSentenceDescription(detectorEvaluation.getExtraction().getError()));
+            addIfNotEmpty(eventSystem, tree.getDirectory().toString(), DetectIssueId.DETECTOR_NOT_EXTRACTABLE, "\tNot Extractable: ", spacer, extractableFailed, DetectorEvaluation::getExtractabilityMessage);
+            addIfNotEmpty(eventSystem, tree.getDirectory().toString(), DetectIssueId.DETECTOR_FAILED, "\tFailure: ", spacer, failed, detectorEvaluation -> detectorEvaluation.getExtraction().getDescription());
+            addIfNotEmpty(eventSystem, tree.getDirectory().toString(), DetectIssueId.DETECTOR_FAILED, "\tException: ", spacer, excepted,
+                detectorEvaluation -> ExceptionUtil.oneSentenceDescription(detectorEvaluation.getExtraction().getError()));
 
-            if (messages.size() > 0) {
-                messages.add(0, tree.getDirectory().toString());
-                eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, DetectIssueId.DETECTOR_FAILED, messages));
-            }
         }
     }
 
-    private void addIfNotEmpty(List<String> messages, String prefix, String spacer, List<DetectorEvaluation> evaluations, Function<DetectorEvaluation, String> reason) {
+    private void addIfNotEmpty(EventSystem eventSystem, String directory, DetectIssueId issueId, String prefix, String spacer, List<DetectorEvaluation> evaluations, Function<DetectorEvaluation, String> reason) {
         if (evaluations.size() > 0) {
             evaluations.forEach(evaluation -> {
+                List<String> messages = new ArrayList<>();
+                messages.add(directory);
                 messages.add(prefix + evaluation.getDetectorRule().getDescriptiveName());
                 messages.add(spacer + reason.apply(evaluation));
+                eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, issueId, messages));
             });
         }
     }
 
-    private void addFallbackIfNotEmpty(List<String> messages, String prefix, String spacer, List<DetectorEvaluation> evaluations, Function<DetectorEvaluation, String> reason) {
+    private void addFallbackIfNotEmpty(EventSystem eventSystem, String directory, DetectIssueId issueId, String prefix, String spacer, List<DetectorEvaluation> evaluations, Function<DetectorEvaluation, String> reason) {
         if (evaluations.size() > 0) {
             evaluations.forEach(evaluation -> {
                 Optional<DetectorEvaluation> fallback = evaluation.getSuccessfullFallback();
                 fallback.ifPresent(detectorEvaluation -> {
+                    List<String> messages = new ArrayList<>();
+                    messages.add(directory);
                     messages.add(prefix + detectorEvaluation.getDetectorRule().getDescriptiveName());
                     messages.add(spacer + "Preferred Detector: " + evaluation.getDetectorRule().getDescriptiveName());
                     messages.add(spacer + "Reason: " + reason.apply(evaluation));
+                    eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, issueId, messages));
                 });
 
             });
