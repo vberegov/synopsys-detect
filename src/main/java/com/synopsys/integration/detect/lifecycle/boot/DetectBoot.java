@@ -227,7 +227,7 @@ public class DetectBoot {
         ProductRunData productRunData;
         ProductBootOptions productBootOptions = detectConfigurationFactory.createProductBootOptions();
         try {
-            productRunData = productBoot.boot(productDecision, productBootOptions, new BlackDuckConnectivityChecker(), new PolarisConnectivityChecker(), productBootFactory, new AnalyticsConfigurationService(gson));
+            productRunData = productBoot.boot(productDecision, productBootOptions, new BlackDuckConnectivityChecker(), new PolarisConnectivityChecker(), productBootFactory, new AnalyticsConfigurationService(gson), eventSystem);
         } catch (DetectUserFriendlyException e) {
             return DetectBootResult.exception(e, detectConfiguration, directoryManager, diagnosticSystem);
         }

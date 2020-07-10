@@ -44,6 +44,7 @@ import com.synopsys.integration.detect.lifecycle.boot.product.ProductBootOptions
 import com.synopsys.integration.detect.lifecycle.run.data.ProductRunData;
 import com.synopsys.integration.detect.workflow.blackduck.analytics.AnalyticsConfigurationService;
 import com.synopsys.integration.detect.workflow.blackduck.analytics.AnalyticsSetting;
+import com.synopsys.integration.detect.workflow.event.EventSystem;
 import com.synopsys.integration.exception.IntegrationException;
 import com.synopsys.integration.polaris.common.configuration.PolarisServerConfig;
 
@@ -163,6 +164,8 @@ public class ProductBootTest {
         AnalyticsConfigurationService analyticsConfigurationService = Mockito.mock(AnalyticsConfigurationService.class);
         Mockito.when(analyticsConfigurationService.fetchAnalyticsSetting(Mockito.any())).thenReturn(new AnalyticsSetting("analytics", true));
 
-        return productBoot.boot(productDecision, productBootOptions, blackDuckConnectivityChecker, polarisConnectivityChecker, productBootFactory, analyticsConfigurationService);
+        EventSystem eventSystem = Mockito.mock(EventSystem.class);
+        
+        return productBoot.boot(productDecision, productBootOptions, blackDuckConnectivityChecker, polarisConnectivityChecker, productBootFactory, analyticsConfigurationService, eventSystem);
     }
 }
