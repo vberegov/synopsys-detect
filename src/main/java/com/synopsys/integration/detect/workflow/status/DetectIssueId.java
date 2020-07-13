@@ -24,16 +24,15 @@ package com.synopsys.integration.detect.workflow.status;
 
 public enum DetectIssueId {
     DEPRECATION, // use of a deprecated property
-    //BLACKDUCK_OPERATION_FORBIDDEN, // HTTP 403 Forbidden : TODO use this!
-    DETECTOR_NOT_EXTRACTABLE,
-    DETECTOR_FALLBACK_USED,
+    DETECTOR_NOT_EXTRACTABLE, // detector "should" run, but some requirement isn't met
+    DETECTOR_FALLBACK_USED, // fallback detector was used
     DETECTOR_EXTRACTION_FAILED, // I don't yet understand diff between this and next
     DETECTOR_FAILED, // a detector failed
     SIGNATURE_SCAN_FAILED, // returned exit code
     SIGNATURE_SCAN_MISSING_RESULTS, // results for target absent from sig scanner output
     SIGNATURE_SCAN_ERROR_LOGGED, // sig scanner logged error(s) for target
     BINARY_SCAN_MISSING_FILE, // File does not exist or is not readable
-    BINARY_SCAN_UPLOAD_FAILED,
+    BINARY_SCAN_UPLOAD_FAILED, // Binary upload failed
     MISSING_PRODUCT_RUN_DATA, // Preconditions for neither Black Duck nor Polaris functionality have been met
     BLACKDUCK_FAILED_TO_CONNECT // Connection to Black Duck failed
 }

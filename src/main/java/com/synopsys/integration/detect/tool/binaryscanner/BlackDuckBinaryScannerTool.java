@@ -25,6 +25,7 @@ package com.synopsys.integration.detect.tool.binaryscanner;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import com.synopsys.integration.blackduck.codelocation.CodeLocationCreationData;
 import com.synopsys.integration.blackduck.codelocation.binaryscanner.BinaryScan;
 import com.synopsys.integration.blackduck.codelocation.binaryscanner.BinaryScanBatch;
 import com.synopsys.integration.blackduck.codelocation.binaryscanner.BinaryScanBatchOutput;
+import com.synopsys.integration.blackduck.codelocation.binaryscanner.BinaryScanOutput;
 import com.synopsys.integration.blackduck.codelocation.binaryscanner.BinaryScanUploadService;
 import com.synopsys.integration.blackduck.service.BlackDuckServicesFactory;
 import com.synopsys.integration.detect.exception.DetectUserFriendlyException;
@@ -141,6 +143,7 @@ public class BlackDuckBinaryScannerTool {
             CodeLocationCreationData<BinaryScanBatchOutput> codeLocationCreationData = binaryScanUploadService.uploadBinaryScan(binaryScanBatch);
 
             BinaryScanBatchOutput binaryScanBatchOutput = codeLocationCreationData.getOutput();
+            logHttpErrors(codeLocationName, binaryScanBatchOutput);
             binaryScanBatchOutput.throwExceptionForError(new Slf4jIntLogger(logger));
 
             logger.info("Successfully uploaded binary scan file: " + codeLocationName);
@@ -149,8 +152,22 @@ public class BlackDuckBinaryScannerTool {
         } catch (IntegrationException e) {
             logger.error("Failed to upload binary scan file: " + e.getMessage());
             eventSystem.publishEvent(Event.StatusSummary, new Status(STATUS_KEY, StatusType.FAILURE));
-            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.EXCEPTION, DetectIssueId.BINARY_SCAN_UPLOAD_FAILED, Arrays.asList(e.getMessage())));
             throw new DetectUserFriendlyException("Failed to upload binary scan file.", e, ExitCodeType.FAILURE_BLACKDUCK_CONNECTIVITY);
+        }
+    }
+
+    private void logHttpErrors(String codelocationName, BinaryScanBatchOutput binaryScanBatchOutput) {
+        // Revisit this when INTCMN-441 is done; the logging part should become unnecessary
+        List<String> messages = new ArrayList<>();
+        for (BinaryScanOutput binaryScanOutput : binaryScanBatchOutput) {
+            if (binaryScanOutput.getErrorMessage().isPresent()) {
+                String message = String.format("Binary scan failed for codelocation %s: %s", codelocationName, binaryScanOutput.getErrorMessage().get());
+                logger.error(message);
+                messages.add(message);
+            }
+        }
+        if (!messages.isEmpty()) {
+            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.BINARY_SCAN, DetectIssueId.BINARY_SCAN_UPLOAD_FAILED, messages));
         }
     }
 }
