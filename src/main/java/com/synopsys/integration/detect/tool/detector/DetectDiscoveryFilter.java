@@ -29,6 +29,7 @@ import com.synopsys.integration.detect.workflow.event.EventSystem;
 import com.synopsys.integration.detect.workflow.nameversion.DetectorNameVersionHandler;
 import com.synopsys.integration.detect.workflow.nameversion.DetectorProjectInfo;
 import com.synopsys.integration.detect.workflow.nameversion.DetectorProjectInfoMetadata;
+import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
 import com.synopsys.integration.detector.base.DetectorEvaluation;
 import com.synopsys.integration.detector.evaluation.DiscoveryFilter;
 import com.synopsys.integration.util.NameVersion;
@@ -42,7 +43,7 @@ public class DetectDiscoveryFilter implements DiscoveryFilter {
         eventSystem.registerListener(Event.DiscoveryEnded, this::discoveryEnded);
     }
 
-    public void discoveryEnded(DetectorEvaluation detectorEvaluation) {
+    public void discoveryEnded(DetectExecutionPhase executionPhase, DetectorEvaluation detectorEvaluation) {
         DetectorProjectInfo info = toProjectInfo(detectorEvaluation);
         if (info != null) {
             detectorNameVersionHandler.accept(info);

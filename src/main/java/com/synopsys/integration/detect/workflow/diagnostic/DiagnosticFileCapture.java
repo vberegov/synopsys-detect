@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
+import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
 
 public class DiagnosticFileCapture {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -42,19 +43,19 @@ public class DiagnosticFileCapture {
     private final File fileDirectory;
     private final Map<Integer, String> fileNames = new HashMap<>();
 
-    public DiagnosticFileCapture(final File fileDirectory, final EventSystem eventSystem) {
+    public DiagnosticFileCapture(File fileDirectory, EventSystem eventSystem) {
         this.fileDirectory = fileDirectory;
         eventSystem.registerListener(Event.CustomerFileOfInterest, this::fileFound);
     }
 
-    private void fileFound(final File foundFile) {
-        final File savedFile = new File(fileDirectory, "FILE-" + files + "-" + foundFile.getName());
+    private void fileFound(DetectExecutionPhase executionPhase, File foundFile) {
+        File savedFile = new File(fileDirectory, "FILE-" + files + "-" + foundFile.getName());
         fileNames.put(files, foundFile.toString());
 
         try {
             FileUtils.copyFile(foundFile, savedFile);
             logger.info("Saved file to diagnostics zip: " + foundFile.toString());
-        } catch (final IOException e) {
+        } catch (IOException e) {
             logger.error("Failed to copy file of interest.", e);
         }
         files++;
@@ -64,15 +65,15 @@ public class DiagnosticFileCapture {
         if (fileNames.size() <= 0)
             return;
 
-        final AtomicReference<String> executableMap = new AtomicReference<>("");
+        AtomicReference<String> executableMap = new AtomicReference<>("");
         fileNames.forEach((key, value) -> {
             executableMap.set(executableMap.get() + key + ": " + value + System.lineSeparator());
         });
 
-        final File mapFile = new File(fileDirectory, "FILE-MAP.txt");
+        File mapFile = new File(fileDirectory, "FILE-MAP.txt");
         try {
             FileUtils.writeStringToFile(mapFile, executableMap.get(), Charset.defaultCharset());
-        } catch (final IOException e) {
+        } catch (IOException e) {
             logger.error("Failed to write executable map.", e);
         }
     }

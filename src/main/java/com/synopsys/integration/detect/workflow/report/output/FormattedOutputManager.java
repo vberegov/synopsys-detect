@@ -38,6 +38,7 @@ import com.synopsys.integration.detect.tool.detector.DetectorToolResult;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
 import com.synopsys.integration.detect.workflow.result.DetectResult;
+import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
 import com.synopsys.integration.detect.workflow.status.DetectIssue;
 import com.synopsys.integration.detect.workflow.status.Status;
 import com.synopsys.integration.detect.workflow.status.UnrecognizedPaths;
@@ -51,7 +52,7 @@ public class FormattedOutputManager {
     private NameVersion projectNameVersion = null;
     private final List<Status> statusSummaries = new ArrayList<>();
     private final List<DetectResult> detectResults = new ArrayList<>();
-    private final List<DetectIssue> detectIssues = new ArrayList<>();
+    private final List<PhasedDetectIssue> phasedDetectIssues = new ArrayList<>();
     private final Map<String, List<File>> unrecognizedPaths = new HashMap<>();
 
     public FormattedOutputManager(EventSystem eventSystem) {
@@ -77,8 +78,8 @@ public class FormattedOutputManager {
                                      .map(status -> new FormattedStatusOutput(status.getDescriptionKey(), status.getStatusType().toString()))
                                      .toList();
 
-        formattedOutput.issues = Bds.of(detectIssues)
-                                     .map(issue -> new FormattedIssueOutput(issue.getType().name(), issue.getId().name(), issue.getMessages()))
+        formattedOutput.issues = Bds.of(phasedDetectIssues)
+                                     .map(issue -> new FormattedIssueOutput(issue.getExecutionPhase(), issue.getIssue().getType().name(), issue.getIssue().getId().name(), issue.getIssue().getMessages()))
                                      .toList();
 
         if (detectorToolResult != null) {
@@ -137,31 +138,31 @@ public class FormattedOutputManager {
         return detectorOutput;
     }
 
-    private void detectorsComplete(DetectorToolResult detectorToolResult) {
+    private void detectorsComplete(DetectExecutionPhase executionPhase, DetectorToolResult detectorToolResult) {
         this.detectorToolResult = detectorToolResult;
     }
 
-    private void codeLocationsAdded(Collection<String> codeLocations) {
+    private void codeLocationsAdded(DetectExecutionPhase executionPhase, Collection<String> codeLocations) {
         this.codeLocations.addAll(codeLocations);
     }
 
-    private void projectNameVersionChosen(NameVersion nameVersion) {
+    private void projectNameVersionChosen(DetectExecutionPhase executionPhase, NameVersion nameVersion) {
         this.projectNameVersion = nameVersion;
     }
 
-    public void addStatusSummary(Status status) {
+    public void addStatusSummary(DetectExecutionPhase executionPhase, Status status) {
         statusSummaries.add(status);
     }
 
-    public void addIssue(DetectIssue issue) {
-        detectIssues.add(issue);
+    public void addIssue(DetectExecutionPhase executionPhase, DetectIssue issue) {
+        phasedDetectIssues.add(new PhasedDetectIssue(executionPhase, issue));
     }
 
-    public void addDetectResult(DetectResult detectResult) {
+    public void addDetectResult(DetectExecutionPhase executionPhase, DetectResult detectResult) {
         detectResults.add(detectResult);
     }
 
-    public void addUnrecognizedPaths(UnrecognizedPaths unrecognizedPaths) {
+    public void addUnrecognizedPaths(DetectExecutionPhase executionPhase, UnrecognizedPaths unrecognizedPaths) {
         if (!this.unrecognizedPaths.containsKey(unrecognizedPaths.getGroup())) {
             this.unrecognizedPaths.put(unrecognizedPaths.getGroup(), new ArrayList<>());
         }

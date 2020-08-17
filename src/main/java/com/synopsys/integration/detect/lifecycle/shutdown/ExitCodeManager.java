@@ -28,31 +28,32 @@ import java.util.List;
 import com.synopsys.integration.detect.exitcode.ExitCodeType;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
+import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
 
 public class ExitCodeManager {
     private final List<ExitCodeRequest> exitCodeRequests = new ArrayList<>();
     private final ExitCodeUtility exitCodeUtility;
 
-    public ExitCodeManager(final EventSystem eventSystem, final ExitCodeUtility exitCodeUtility) {
+    public ExitCodeManager(EventSystem eventSystem, ExitCodeUtility exitCodeUtility) {
         this.exitCodeUtility = exitCodeUtility;
         eventSystem.registerListener(Event.ExitCode, this::addExitCodeRequest);
     }
 
-    public void requestExitCode(final Exception e) {
+    public void requestExitCode(Exception e) {
         requestExitCode(exitCodeUtility.getExitCodeFromExceptionDetails(e));
     }
 
-    public void requestExitCode(final ExitCodeType exitCodeType) {
+    public void requestExitCode(ExitCodeType exitCodeType) {
         exitCodeRequests.add(new ExitCodeRequest(exitCodeType));
     }
 
-    public void addExitCodeRequest(final ExitCodeRequest request) {
+    public void addExitCodeRequest(DetectExecutionPhase executionPhase, ExitCodeRequest request) {
         exitCodeRequests.add(request);
     }
 
     public ExitCodeType getWinningExitCode() {
         ExitCodeType winningExitCodeType = ExitCodeType.SUCCESS;
-        for (final ExitCodeRequest exitCodeRequest : exitCodeRequests) {
+        for (ExitCodeRequest exitCodeRequest : exitCodeRequests) {
             winningExitCodeType = ExitCodeType.getWinningExitCodeType(winningExitCodeType, exitCodeRequest.getExitCodeType());
         }
         return winningExitCodeType;

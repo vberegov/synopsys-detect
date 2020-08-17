@@ -22,20 +22,23 @@
  */
 package com.synopsys.integration.detect.workflow.report.output;
 
-import java.util.List;
-
 import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
+import com.synopsys.integration.detect.workflow.status.DetectIssue;
 
-public class FormattedIssueOutput {
-    public final DetectExecutionPhase executionPhase;
-    public final String type;
-    public final String id;
-    public final List<String> messages;
+public class PhasedDetectIssue {
+    private final DetectExecutionPhase executionPhase;
+    private final DetectIssue issue;
 
-    public FormattedIssueOutput(DetectExecutionPhase executionPhase, String type, String id, List<String> messages) {
+    public PhasedDetectIssue(DetectExecutionPhase executionPhase, DetectIssue issue) {
         this.executionPhase = executionPhase;
-        this.type = type;
-        this.id = id;
-        this.messages = messages;
+        this.issue = issue;
+    }
+
+    public DetectExecutionPhase getExecutionPhase() {
+        return executionPhase;
+    }
+
+    public DetectIssue getIssue() {
+        return issue;
     }
 }

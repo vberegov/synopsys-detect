@@ -36,25 +36,25 @@ public class DetectStatusManager {
     private final List<DetectResult> detectResults = new ArrayList<>();
     private final List<DetectIssue> detectIssues = new ArrayList<>();
 
-    public DetectStatusManager(final EventSystem eventSystem) {
+    public DetectStatusManager(EventSystem eventSystem) {
         eventSystem.registerListener(Event.StatusSummary, this::addStatusSummary);
         eventSystem.registerListener(Event.Issue, this::addIssue);
         eventSystem.registerListener(Event.ResultProduced, this::addDetectResult);
     }
 
-    public void addStatusSummary(final Status status) {
+    public void addStatusSummary(DetectExecutionPhase executionPhase, Status status) {
         statusSummaries.add(status);
     }
 
-    public void addIssue(DetectIssue issue) {
+    public void addIssue(DetectExecutionPhase executionPhase, DetectIssue issue) {
         detectIssues.add(issue);
     }
 
-    public void addDetectResult(final DetectResult detectResult) {
+    public void addDetectResult(DetectExecutionPhase executionPhase, DetectResult detectResult) {
         detectResults.add(detectResult);
     }
 
-    public void logDetectResults(final IntLogger logger, final ExitCodeType exitCodeType) {
+    public void logDetectResults(IntLogger logger, ExitCodeType exitCodeType) {
         new DetectStatusLogger().logDetectStatus(logger, statusSummaries, detectResults, detectIssues, exitCodeType);
     }
 

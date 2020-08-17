@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
+import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
 import com.synopsys.integration.detectable.detectable.executable.ExecutableOutput;
 
 public class DiagnosticExecutableCapture {
@@ -43,20 +44,20 @@ public class DiagnosticExecutableCapture {
     private final File executableDirectory;
     private final Map<Integer, String> indexToCommand = new HashMap<>();
 
-    public DiagnosticExecutableCapture(final File executableDirectory, final EventSystem eventSystem) {
+    public DiagnosticExecutableCapture(File executableDirectory, EventSystem eventSystem) {
         this.executableDirectory = executableDirectory;
         eventSystem.registerListener(Event.Executable, this::executableFinished);
     }
 
-    private void executableFinished(final ExecutableOutput executableOutput) {
-        final File errorOut = new File(executableDirectory, "EXE-" + executables + "-ERR.xout");
-        final File standardOut = new File(executableDirectory, "EXE-" + executables + "-STD.xout");
+    private void executableFinished(DetectExecutionPhase executionPhase, ExecutableOutput executableOutput) {
+        File errorOut = new File(executableDirectory, "EXE-" + executables + "-ERR.xout");
+        File standardOut = new File(executableDirectory, "EXE-" + executables + "-STD.xout");
         indexToCommand.put(executables, executableOutput.getCommandDescription());
 
         try {
             FileUtils.writeStringToFile(errorOut, executableOutput.getErrorOutput(), Charset.defaultCharset());
             FileUtils.writeStringToFile(standardOut, executableOutput.getStandardOutput(), Charset.defaultCharset());
-        } catch (final IOException e) {
+        } catch (IOException e) {
             logger.error("Failed to capture executable output.", e);
         }
         executables++;
@@ -66,15 +67,15 @@ public class DiagnosticExecutableCapture {
         if (indexToCommand.size() <= 0)
             return;
 
-        final AtomicReference<String> executableMap = new AtomicReference<>("");
+        AtomicReference<String> executableMap = new AtomicReference<>("");
         indexToCommand.forEach((key, value) -> {
             executableMap.set(executableMap.get() + key + ": " + value + System.lineSeparator());
         });
 
-        final File mapFile = new File(executableDirectory, "EXE-MAP.txt");
+        File mapFile = new File(executableDirectory, "EXE-MAP.txt");
         try {
             FileUtils.writeStringToFile(mapFile, executableMap.get(), Charset.defaultCharset());
-        } catch (final IOException e) {
+        } catch (IOException e) {
             logger.error("Failed to write executable map.", e);
         }
     }

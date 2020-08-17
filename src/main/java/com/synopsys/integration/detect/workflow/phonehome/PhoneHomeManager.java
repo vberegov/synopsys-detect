@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.synopsys.integration.detect.DetectInfo;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
+import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
 import com.synopsys.integration.detector.base.DetectorType;
 import com.synopsys.integration.phonehome.PhoneHomeResponse;
 
@@ -44,16 +45,16 @@ public abstract class PhoneHomeManager {
     protected PhoneHomeResponse currentPhoneHomeResponse;
     protected Map<String, String> additionalMetaData;
 
-    public PhoneHomeManager(final Map<String, String> additionalMetaData, final DetectInfo detectInfo, final EventSystem eventSystem) {
+    public PhoneHomeManager(Map<String, String> additionalMetaData, DetectInfo detectInfo, EventSystem eventSystem) {
         this.detectInfo = detectInfo;
         this.eventSystem = eventSystem;
         this.additionalMetaData = additionalMetaData;
 
         eventSystem.registerListener(Event.ApplicableCompleted, this::startPhoneHome);
-        eventSystem.registerListener(Event.DetectorsProfiled, event -> startPhoneHome(event.getAggregateTimings()));
+        eventSystem.registerListener(Event.DetectorsProfiled, (executionPhase, event) -> startPhoneHome(event.getAggregateTimings()));
     }
 
-    public abstract PhoneHomeResponse phoneHome(final Map<String, String> metadata, final String... artifactModules);
+    public abstract PhoneHomeResponse phoneHome(Map<String, String> metadata, String... artifactModules);
 
     public void startPhoneHome() {
         // detect will attempt to phone home twice - once upon startup and
@@ -65,36 +66,36 @@ public abstract class PhoneHomeManager {
         safelyPhoneHome(new HashMap<>());
     }
 
-    private void startPhoneHome(final Set<DetectorType> applicableDetectorTypes) {
+    private void startPhoneHome(DetectExecutionPhase executionPhase, Set<DetectorType> applicableDetectorTypes) {
         if (applicableDetectorTypes != null) {
-            final String[] artifactModules = applicableDetectorTypes.stream().map(DetectorType::toString).toArray(String[]::new);
+            String[] artifactModules = applicableDetectorTypes.stream().map(DetectorType::toString).toArray(String[]::new);
             safelyPhoneHome(new HashMap<>(), artifactModules);
         }
     }
 
-    public void startPhoneHome(final Map<DetectorType, Long> aggregateTimes) {
-        final Map<String, String> metadata = new HashMap<>();
+    public void startPhoneHome(Map<DetectorType, Long> aggregateTimes) {
+        Map<String, String> metadata = new HashMap<>();
         if (aggregateTimes != null) {
-            final String applicableBomToolsString = aggregateTimes.keySet().stream()
-                                                        .map(it -> String.format("%s:%s", it.toString(), aggregateTimes.get(it)))
-                                                        .collect(Collectors.joining(","));
+            String applicableBomToolsString = aggregateTimes.keySet().stream()
+                                                  .map(it -> String.format("%s:%s", it.toString(), aggregateTimes.get(it)))
+                                                  .collect(Collectors.joining(","));
             metadata.put("detectorTimes", applicableBomToolsString);
         }
         safelyPhoneHome(metadata);
     }
 
-    private void safelyPhoneHome(final Map<String, String> metadata, final String... artifactModules) {
+    private void safelyPhoneHome(Map<String, String> metadata, String... artifactModules) {
         endPhoneHome();
         try {
             currentPhoneHomeResponse = phoneHome(metadata, artifactModules);
-        } catch (final IllegalStateException e) {
+        } catch (IllegalStateException e) {
             logger.debug(e.getMessage(), e);
         }
     }
 
     public void endPhoneHome() {
         if (currentPhoneHomeResponse != null) {
-            final Boolean result = currentPhoneHomeResponse.getImmediateResult();
+            Boolean result = currentPhoneHomeResponse.getImmediateResult();
             logger.trace(String.format("Phone home ended with result: %b", result));
         }
     }

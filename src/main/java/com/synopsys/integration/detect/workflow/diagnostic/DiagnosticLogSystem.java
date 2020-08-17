@@ -48,7 +48,7 @@ public class DiagnosticLogSystem {
     private DiagnosticLogger extractionLogger = null;
     private final File logDirectory;
 
-    public DiagnosticLogSystem(final File logDirectory, final EventSystem eventSystem) {
+    public DiagnosticLogSystem(File logDirectory, EventSystem eventSystem) {
         //The intent of diagnostics logging is to:
         //Capture whatever is written to Sys Out regardless of actual logging level.
         //Set the our code's CONSOLE output to the level of DEBUG.
@@ -71,22 +71,22 @@ public class DiagnosticLogSystem {
         restrictConsoleToDebug();
 
         logger.info("Adding additional log listeners to extractions.");
-        eventSystem.registerListener(Event.ExtractionStarted, it -> startLoggingExtraction(((DetectExtractionEnvironment) it.getExtractionEnvironment()).getExtractionId()));
-        eventSystem.registerListener(Event.ExtractionEnded, it -> stopLoggingExtraction(((DetectExtractionEnvironment) it.getExtractionEnvironment()).getExtractionId()));
+        eventSystem.registerListener(Event.ExtractionStarted, (executionPhase, event) -> startLoggingExtraction(((DetectExtractionEnvironment) event.getExtractionEnvironment()).getExtractionId()));
+        eventSystem.registerListener(Event.ExtractionEnded, (executionPhase, event) -> stopLoggingExtraction(((DetectExtractionEnvironment) event.getExtractionEnvironment()).getExtractionId()));
 
         logger.info("Diagnostics is now in control of logging!");
     }
 
-    public void startLoggingExtraction(final ExtractionId extractionId) {
+    public void startLoggingExtraction(ExtractionId extractionId) {
         logger.info("Diagnostics attempting to redirect extraction logs: " + extractionId.toUniqueString());
-        final File logDir = new File(logDirectory, "extractions");
+        File logDir = new File(logDirectory, "extractions");
         logDir.mkdirs();
-        final File logFile = new File(logDir, extractionId.toUniqueString() + ".txt");
+        File logFile = new File(logDir, extractionId.toUniqueString() + ".txt");
         extractionLogger = new DiagnosticLogger(logFile, Level.ALL);
         extractionLogger.startLogging();
     }
 
-    public void stopLoggingExtraction(final ExtractionId extractionId) {
+    public void stopLoggingExtraction(ExtractionId extractionId) {
         logger.info("Diagnostics finished redirecting for extraction: " + extractionId.toUniqueString());
         if (extractionLogger != null) {
             extractionLogger.stopLogging();
@@ -94,10 +94,10 @@ public class DiagnosticLogSystem {
     }
 
     private void restrictConsoleToDebug() {
-        for (final Iterator<Appender<ILoggingEvent>> it = DiagnosticLogUtil.getRootLogger().iteratorForAppenders(); it.hasNext(); ) {
-            final Appender appender = it.next();
+        for (Iterator<Appender<ILoggingEvent>> it = DiagnosticLogUtil.getRootLogger().iteratorForAppenders(); it.hasNext(); ) {
+            Appender appender = it.next();
             if (appender.getName() != null && appender.getName().equals("CONSOLE")) {
-                final ThresholdFilter levelFilter = new ThresholdFilter();
+                ThresholdFilter levelFilter = new ThresholdFilter();
                 levelFilter.setLevel(Level.DEBUG.levelStr);
                 levelFilter.start();
                 appender.addFilter(levelFilter);
@@ -105,26 +105,26 @@ public class DiagnosticLogSystem {
         }
     }
 
-    private File logFileNamed(final String name) {
+    private File logFileNamed(String name) {
         return new File(logDirectory, name + ".txt");
     }
 
     public void finish() {
         diagnosticSysOutCapture.stopCapture();
-        for (final DiagnosticLogger diagnosticLogger : loggers) {
+        for (DiagnosticLogger diagnosticLogger : loggers) {
             diagnosticLogger.stopLogging();
         }
     }
 
-    private void addLogger(final Level level) {
-        final File logFile = logFileNamed(level.levelStr.toLowerCase());
-        final DiagnosticLogger diagnosticLogger = new DiagnosticLogger(logFile, level);
+    private void addLogger(Level level) {
+        File logFile = logFileNamed(level.levelStr.toLowerCase());
+        DiagnosticLogger diagnosticLogger = new DiagnosticLogger(logFile, level);
         loggers.add(diagnosticLogger);
         diagnosticLogger.startLogging();
     }
 
-    private void addLoggers(final Level... levels) {
-        for (final Level level : levels) {
+    private void addLoggers(Level... levels) {
+        for (Level level : levels) {
             addLogger(level);
         }
     }

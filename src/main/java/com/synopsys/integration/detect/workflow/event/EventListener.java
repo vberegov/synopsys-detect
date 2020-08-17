@@ -22,6 +22,8 @@
  */
 package com.synopsys.integration.detect.workflow.event;
 
+import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
+
 public interface EventListener<T> {
-    void eventOccured(T event);
+    void eventOccured(DetectExecutionPhase executionPhase, T event);
 }
