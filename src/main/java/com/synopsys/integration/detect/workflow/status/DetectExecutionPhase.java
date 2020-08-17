@@ -22,36 +22,7 @@
  */
 package com.synopsys.integration.detect.workflow.status;
 
-import java.util.Arrays;
-import java.util.List;
-
-import com.synopsys.integration.detect.workflow.event.Event;
-import com.synopsys.integration.detect.workflow.event.EventSystem;
-
-public class DetectIssue {
-    public DetectIssueType getType() {
-        return type;
-    }
-
-    public DetectIssueId getId() {
-        return id;
-    }
-
-    public List<String> getMessages() {
-        return messages;
-    }
-
-    private final DetectIssueType type;
-    private final DetectIssueId id;
-    private final List<String> messages;
-
-    public DetectIssue(DetectIssueType type, DetectIssueId id, List<String> messages) {
-        this.type = type;
-        this.id = id;
-        this.messages = messages;
-    }
-
-    public static void publish(EventSystem eventSystem, DetectIssueType type, DetectIssueId id, String... messages) {
-        eventSystem.publishEvent(Event.Issue, new DetectIssue(type, id, Arrays.asList(messages)));
-    }
+public enum DetectExecutionPhase {
+    STARTUP,
+    SHUTDOWN
 }

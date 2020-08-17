@@ -42,6 +42,7 @@ import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
 import com.synopsys.integration.detect.workflow.project.DetectToolProjectInfo;
 import com.synopsys.integration.detect.workflow.status.DetectIssue;
+import com.synopsys.integration.detect.workflow.status.DetectIssueId;
 import com.synopsys.integration.detect.workflow.status.DetectIssueType;
 import com.synopsys.integration.detect.workflow.status.Status;
 import com.synopsys.integration.detect.workflow.status.StatusType;
@@ -66,8 +67,8 @@ public class DetectableTool {
     private final DetectTool detectTool;
     private final EventSystem eventSystem;
 
-    public DetectableTool(final DetectableCreatable detectableCreatable, final ExtractionEnvironmentProvider extractionEnvironmentProvider, final CodeLocationConverter codeLocationConverter,
-        final String name, final DetectTool detectTool, final EventSystem eventSystem) {
+    public DetectableTool(DetectableCreatable detectableCreatable, ExtractionEnvironmentProvider extractionEnvironmentProvider, CodeLocationConverter codeLocationConverter,
+        String name, DetectTool detectTool, EventSystem eventSystem) {
         this.codeLocationConverter = codeLocationConverter;
         this.name = name;
         this.detectableCreatable = detectableCreatable;
@@ -76,15 +77,15 @@ public class DetectableTool {
         this.eventSystem = eventSystem;
     }
 
-    public DetectableToolResult execute(final File sourcePath) { //TODO: Caller publishes result.
+    public DetectableToolResult execute(File sourcePath) { //TODO: Caller publishes result.
         logger.trace("Starting a detectable tool.");
 
-        final DetectableEnvironment detectableEnvironment = new DetectableEnvironment(sourcePath);
-        final Detectable detectable = detectableCreatable.createDetectable(detectableEnvironment);
+        DetectableEnvironment detectableEnvironment = new DetectableEnvironment(sourcePath);
+        Detectable detectable = detectableCreatable.createDetectable(detectableEnvironment);
 
         //TODO: Replicate? logger.info(String.format("Initializing %s.", detectable.getDescriptiveName()));
 
-        final DetectableResult applicable = detectable.applicable();
+        DetectableResult applicable = detectable.applicable();
 
         if (!applicable.getPassed()) {
             logger.debug("Was not applicable.");
@@ -96,27 +97,27 @@ public class DetectableTool {
         DetectableResult extractable;
         try {
             extractable = detectable.extractable();
-        } catch (final DetectableException e) {
+        } catch (DetectableException e) {
             extractable = new ExceptionDetectableResult(e);
         }
 
         if (!extractable.getPassed()) {
             logger.error("Was not extractable: " + extractable.toDescription());
             eventSystem.publishEvent(Event.StatusSummary, new Status(name, StatusType.FAILURE));
-            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, Arrays.asList(extractable.toDescription())));
+            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, DetectIssueId.DETECTOR_NOT_EXTRACTABLE, Arrays.asList(extractable.toDescription())));
             eventSystem.publishEvent(Event.ExitCode, new ExitCodeRequest(ExitCodeType.FAILURE_GENERAL_ERROR, extractable.toDescription()));
             return DetectableToolResult.failed(extractable);
         }
 
         logger.debug("Extractable passed.");
 
-        final ExtractionEnvironment extractionEnvironment = extractionEnvironmentProvider.createExtractionEnvironment(name);
-        final Extraction extraction = detectable.extract(extractionEnvironment);
+        ExtractionEnvironment extractionEnvironment = extractionEnvironmentProvider.createExtractionEnvironment(name);
+        Extraction extraction = detectable.extract(extractionEnvironment);
 
         if (!extraction.isSuccess()) {
             logger.error("Extraction was not success.");
             eventSystem.publishEvent(Event.StatusSummary, new Status(name, StatusType.FAILURE));
-            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, Arrays.asList(extraction.getDescription())));
+            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, DetectIssueId.DETECTOR_EXTRACTION_FAILED, Arrays.asList(extraction.getDescription())));
             eventSystem.publishEvent(Event.ExitCode, new ExitCodeRequest(ExitCodeType.FAILURE_GENERAL_ERROR, extractable.toDescription()));
             return DetectableToolResult.failed();
         } else {
@@ -124,16 +125,16 @@ public class DetectableTool {
             eventSystem.publishEvent(Event.StatusSummary, new Status(name, StatusType.SUCCESS));
         }
 
-        final Map<CodeLocation, DetectCodeLocation> detectCodeLocationMap = codeLocationConverter.toDetectCodeLocation(sourcePath, extraction, sourcePath, name);
-        final List<DetectCodeLocation> detectCodeLocations = new ArrayList<>(detectCodeLocationMap.values());
+        Map<CodeLocation, DetectCodeLocation> detectCodeLocationMap = codeLocationConverter.toDetectCodeLocation(sourcePath, extraction, sourcePath, name);
+        List<DetectCodeLocation> detectCodeLocations = new ArrayList<>(detectCodeLocationMap.values());
 
         // new DetectableToolResult
 
-        final File dockerTar = extraction.getMetaData(DockerExtractor.DOCKER_TAR_META_DATA).orElse(null); // ifPresent(DetectableToolResult::addDockerTar)
+        File dockerTar = extraction.getMetaData(DockerExtractor.DOCKER_TAR_META_DATA).orElse(null); // ifPresent(DetectableToolResult::addDockerTar)
 
         DetectToolProjectInfo projectInfo = null;
         if (StringUtils.isNotBlank(extraction.getProjectName()) || StringUtils.isNotBlank(extraction.getProjectVersion())) {
-            final NameVersion nameVersion = new NameVersion(extraction.getProjectName(), extraction.getProjectVersion());
+            NameVersion nameVersion = new NameVersion(extraction.getProjectName(), extraction.getProjectVersion());
             projectInfo = new DetectToolProjectInfo(detectTool, nameVersion);
         }
 
