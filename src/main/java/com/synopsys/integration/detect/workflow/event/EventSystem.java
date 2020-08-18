@@ -27,19 +27,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.synopsys.integration.detect.DetectTool;
+import com.synopsys.integration.detectable.Detectable;
 
 public class EventSystem {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Map<EventType, List<EventListener>> eventListenerMap = new HashMap<>();
-    private DetectExecutionPhase executionPhase = DetectExecutionPhase.STARTUP;
+    private DetectTool tool;
+    private Detectable detectable;
 
-    public void setExecutionPhase(DetectExecutionPhase executionPhase) {
-        this.executionPhase = executionPhase;
+    public void setTool(DetectTool tool) {
+        logger.info(String.format("*** tool set to %s", tool));
+        this.tool = tool;
+    }
+
+    public void setDetectable(Detectable detectable) {
+        this.detectable = detectable;
     }
 
     public <T> void publishEvent(EventType<T> event, T payload) {
         for (EventListener listener : safelyGetListeners(event)) {
-            listener.eventOccured(executionPhase, payload);
+            listener.eventOccured(tool, detectable, payload);
         }
     }
 

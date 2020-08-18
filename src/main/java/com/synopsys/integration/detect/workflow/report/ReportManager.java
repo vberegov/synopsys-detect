@@ -24,6 +24,7 @@ package com.synopsys.integration.detect.workflow.report;
 
 import java.util.Map;
 
+import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.tool.detector.DetectorIssuePublisher;
 import com.synopsys.integration.detect.tool.detector.DetectorToolResult;
 import com.synopsys.integration.detect.workflow.codelocation.DetectCodeLocation;
@@ -32,7 +33,7 @@ import com.synopsys.integration.detect.workflow.event.EventSystem;
 import com.synopsys.integration.detect.workflow.report.writer.DebugLogReportWriter;
 import com.synopsys.integration.detect.workflow.report.writer.ReportWriter;
 import com.synopsys.integration.detect.workflow.report.writer.TraceLogReportWriter;
-import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
+import com.synopsys.integration.detectable.Detectable;
 import com.synopsys.integration.detector.base.DetectorEvaluation;
 import com.synopsys.integration.detector.base.DetectorEvaluationTree;
 
@@ -73,7 +74,7 @@ public class ReportManager {
         eventSystem.registerListener(Event.DiscoveriesCompleted, this::discoveriesCompleted);
         eventSystem.registerListener(Event.DetectorsComplete, this::bomToolsComplete);
 
-        eventSystem.registerListener(Event.CodeLocationsCalculated, (executionPhase, event) -> codeLocationsCompleted(event.getCodeLocationNames()));
+        eventSystem.registerListener(Event.CodeLocationsCalculated, (tool, detectable, event) -> codeLocationsCompleted(event.getCodeLocationNames()));
 
         eventSystem.registerListener(Event.DiscoveryCount, this::discoveryCount);
         eventSystem.registerListener(Event.DiscoveryStarted, this::discoveryStarted);
@@ -86,47 +87,47 @@ public class ReportManager {
     }
 
     // Reports
-    public void searchCompleted(DetectExecutionPhase executionPhase, DetectorEvaluationTree rootEvaluation) {
+    public void searchCompleted(DetectTool tool, Detectable detectable, DetectorEvaluationTree rootEvaluation) {
         searchSummaryReporter.print(debugLogWriter, rootEvaluation);
         DetailedSearchSummaryReporter detailedSearchSummaryReporter = new DetailedSearchSummaryReporter();
         detailedSearchSummaryReporter.print(traceLogWriter, rootEvaluation);
     }
 
-    public void preparationsCompleted(DetectExecutionPhase executionPhase, DetectorEvaluationTree detectorEvaluationTree) {
+    public void preparationsCompleted(DetectTool tool, Detectable detectable, DetectorEvaluationTree detectorEvaluationTree) {
         preparationSummaryReporter.write(debugLogWriter, detectorEvaluationTree);
     }
 
-    public void discoveryCount(DetectExecutionPhase executionPhase, Integer count) {
+    public void discoveryCount(DetectTool tool, Detectable detectable, Integer count) {
         discoveryLogger.setDiscoveryCount(count);
     }
 
-    public void discoveryStarted(DetectExecutionPhase executionPhase, DetectorEvaluation detectorEvaluation) {
+    public void discoveryStarted(DetectTool tool, Detectable detectable, DetectorEvaluation detectorEvaluation) {
         discoveryLogger.discoveryStarted(detectorEvaluation);
     }
 
-    public void discoveryEnded(DetectExecutionPhase executionPhase, DetectorEvaluation detectorEvaluation) {
+    public void discoveryEnded(DetectTool tool, Detectable detectable, DetectorEvaluation detectorEvaluation) {
         discoveryLogger.discoveryEnded(detectorEvaluation);
     }
 
-    public void exractionCount(DetectExecutionPhase executionPhase, Integer count) {
+    public void exractionCount(DetectTool tool, Detectable detectable, Integer count) {
         extractionLogger.setExtractionCount(count);
     }
 
-    public void exractionStarted(DetectExecutionPhase executionPhase, DetectorEvaluation detectorEvaluation) {
+    public void exractionStarted(DetectTool tool, Detectable detectable, DetectorEvaluation detectorEvaluation) {
         extractionLogger.extractionStarted(detectorEvaluation);
     }
 
-    public void exractionEnded(DetectExecutionPhase executionPhase, DetectorEvaluation detectorEvaluation) {
+    public void exractionEnded(DetectTool tool, Detectable detectable, DetectorEvaluation detectorEvaluation) {
         extractionLogger.extractionEnded(detectorEvaluation);
     }
 
     private DetectorToolResult detectorToolResult;
 
-    public void bomToolsComplete(DetectExecutionPhase executionPhase, DetectorToolResult detectorToolResult) {
+    public void bomToolsComplete(DetectTool tool, Detectable detectable, DetectorToolResult detectorToolResult) {
         this.detectorToolResult = detectorToolResult;
     }
 
-    public void discoveriesCompleted(DetectExecutionPhase executionPhase, DetectorEvaluationTree detectorEvaluationTree) {
+    public void discoveriesCompleted(DetectTool tool, Detectable detectable, DetectorEvaluationTree detectorEvaluationTree) {
         discoverySummaryReporter.writeSummary(debugLogWriter, detectorEvaluationTree);
     }
 

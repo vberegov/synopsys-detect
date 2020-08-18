@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.synopsys.integration.configuration.config.PropertyConfiguration;
 import com.synopsys.integration.detect.DetectInfo;
+import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.tool.detector.DetectorToolResult;
 import com.synopsys.integration.detect.workflow.codelocation.DetectCodeLocation;
 import com.synopsys.integration.detect.workflow.event.Event;
@@ -45,7 +46,7 @@ import com.synopsys.integration.detect.workflow.report.SearchSummaryReporter;
 import com.synopsys.integration.detect.workflow.report.writer.FileReportWriter;
 import com.synopsys.integration.detect.workflow.report.writer.InfoLogReportWriter;
 import com.synopsys.integration.detect.workflow.report.writer.ReportWriter;
-import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
+import com.synopsys.integration.detectable.Detectable;
 import com.synopsys.integration.detector.base.DetectorEvaluationTree;
 
 public class DiagnosticReportHandler {
@@ -94,7 +95,7 @@ public class DiagnosticReportHandler {
         createReports();
 
         eventSystem.registerListener(Event.DetectorsComplete, this::completedBomToolEvaluations);
-        eventSystem.registerListener(Event.CodeLocationsCalculated, (executionPhase, event) -> completedCodeLocations(event.getCodeLocationNames()));
+        eventSystem.registerListener(Event.CodeLocationsCalculated, (tool, detectable, event) -> completedCodeLocations(event.getCodeLocationNames()));
         eventSystem.registerListener(Event.DetectorsProfiled, this::detectorsProfiled);
     }
 
@@ -104,7 +105,7 @@ public class DiagnosticReportHandler {
 
     private DetectorToolResult detectorToolResult;
 
-    public void completedBomToolEvaluations(DetectExecutionPhase executionPhase, DetectorToolResult detectorToolResult) {
+    public void completedBomToolEvaluations(DetectTool tool, Detectable detectable, DetectorToolResult detectorToolResult) {
         this.detectorToolResult = detectorToolResult;
 
         DetectorEvaluationTree rootEvaluation;
@@ -151,7 +152,7 @@ public class DiagnosticReportHandler {
         }
     }
 
-    private void detectorsProfiled(DetectExecutionPhase executionPhase, DetectorTimings detectorTimings) {
+    private void detectorsProfiled(DetectTool tool, Detectable detectable, DetectorTimings detectorTimings) {
         try {
             ReportWriter profileWriter = getReportWriter(ReportTypes.DETECTOR_PROFILE);
             ProfilingReporter reporter = new ProfilingReporter();

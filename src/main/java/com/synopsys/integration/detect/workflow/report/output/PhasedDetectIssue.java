@@ -22,20 +22,27 @@
  */
 package com.synopsys.integration.detect.workflow.report.output;
 
-import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
+import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.workflow.status.DetectIssue;
+import com.synopsys.integration.detectable.Detectable;
 
 public class PhasedDetectIssue {
-    private final DetectExecutionPhase executionPhase;
+    private final DetectTool detectTool;
+    private final Detectable detectable;
     private final DetectIssue issue;
 
-    public PhasedDetectIssue(DetectExecutionPhase executionPhase, DetectIssue issue) {
-        this.executionPhase = executionPhase;
+    public PhasedDetectIssue(DetectTool detectTool, Detectable detectable, DetectIssue issue) {
+        this.detectTool = detectTool;
+        this.detectable = detectable;
         this.issue = issue;
     }
 
-    public DetectExecutionPhase getExecutionPhase() {
-        return executionPhase;
+    public DetectTool getDetectTool() {
+        return detectTool;
+    }
+
+    public Detectable getDetectable() {
+        return detectable;
     }
 
     public DetectIssue getIssue() {

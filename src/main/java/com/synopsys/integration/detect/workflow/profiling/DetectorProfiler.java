@@ -26,9 +26,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
-import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
+import com.synopsys.integration.detectable.Detectable;
 import com.synopsys.integration.detector.base.DetectorEvaluation;
 import com.synopsys.integration.detector.base.DetectorType;
 
@@ -51,38 +52,38 @@ public class DetectorProfiler {
         eventSystem.registerListener(Event.DiscoveryEnded, this::discoveryEnded);
         eventSystem.registerListener(Event.ExtractionStarted, this::extractionStarted);
         eventSystem.registerListener(Event.ExtractionEnded, this::extractionEnded);
-        eventSystem.registerListener(Event.DetectorsComplete, (executionPhase, event) -> detectorsComplete());
+        eventSystem.registerListener(Event.DetectorsComplete, (tool, detectable, event) -> detectorsComplete());
     }
 
-    private void applicableStarted(DetectExecutionPhase executionPhase, DetectorEvaluation evaluation) {
+    private void applicableStarted(DetectTool tool, Detectable detectable, DetectorEvaluation evaluation) {
         applicableTimekeeper.started(evaluation);
     }
 
-    private void applicableEnded(DetectExecutionPhase executionPhase, DetectorEvaluation evaluation) {
+    private void applicableEnded(DetectTool tool, Detectable detectable, DetectorEvaluation evaluation) {
         applicableTimekeeper.ended(evaluation);
     }
 
-    private void extractableStarted(DetectExecutionPhase executionPhase, DetectorEvaluation evaluation) {
+    private void extractableStarted(DetectTool tool, Detectable detectable, DetectorEvaluation evaluation) {
         extractableTimekeeper.started(evaluation);
     }
 
-    private void extractableEnded(DetectExecutionPhase executionPhase, DetectorEvaluation evaluation) {
+    private void extractableEnded(DetectTool tool, Detectable detectable, DetectorEvaluation evaluation) {
         extractableTimekeeper.ended(evaluation);
     }
 
-    private void discoveryStarted(DetectExecutionPhase executionPhase, DetectorEvaluation evaluation) {
+    private void discoveryStarted(DetectTool tool, Detectable detectable, DetectorEvaluation evaluation) {
         discoveryTimekeeper.started(evaluation);
     }
 
-    private void discoveryEnded(DetectExecutionPhase executionPhase, DetectorEvaluation evaluation) {
+    private void discoveryEnded(DetectTool tool, Detectable detectable, DetectorEvaluation evaluation) {
         discoveryTimekeeper.ended(evaluation);
     }
 
-    private void extractionStarted(DetectExecutionPhase executionPhase, DetectorEvaluation evaluation) {
+    private void extractionStarted(DetectTool tool, Detectable detectable, DetectorEvaluation evaluation) {
         extractionTimekeeper.started(evaluation);
     }
 
-    private void extractionEnded(DetectExecutionPhase executionPhase, DetectorEvaluation evaluation) {
+    private void extractionEnded(DetectTool tool, Detectable detectable, DetectorEvaluation evaluation) {
         extractionTimekeeper.ended(evaluation);
     }
 

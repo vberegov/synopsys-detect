@@ -24,16 +24,19 @@ package com.synopsys.integration.detect.workflow.report.output;
 
 import java.util.List;
 
-import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
+import com.synopsys.integration.detect.DetectTool;
+import com.synopsys.integration.detectable.Detectable;
 
 public class FormattedIssueOutput {
-    public final DetectExecutionPhase executionPhase;
+    public final DetectTool tool;
+    public final Detectable detectable;
     public final String type;
     public final String id;
     public final List<String> messages;
 
-    public FormattedIssueOutput(DetectExecutionPhase executionPhase, String type, String id, List<String> messages) {
-        this.executionPhase = executionPhase;
+    public FormattedIssueOutput(DetectTool tool, Detectable detectable, String type, String id, List<String> messages) {
+        this.tool = tool;
+        this.detectable = detectable;
         this.type = type;
         this.id = id;
         this.messages = messages;

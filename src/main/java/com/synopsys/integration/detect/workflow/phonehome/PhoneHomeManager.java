@@ -31,9 +31,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.synopsys.integration.detect.DetectInfo;
+import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
-import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
+import com.synopsys.integration.detectable.Detectable;
 import com.synopsys.integration.detector.base.DetectorType;
 import com.synopsys.integration.phonehome.PhoneHomeResponse;
 
@@ -51,7 +52,7 @@ public abstract class PhoneHomeManager {
         this.additionalMetaData = additionalMetaData;
 
         eventSystem.registerListener(Event.ApplicableCompleted, this::startPhoneHome);
-        eventSystem.registerListener(Event.DetectorsProfiled, (executionPhase, event) -> startPhoneHome(event.getAggregateTimings()));
+        eventSystem.registerListener(Event.DetectorsProfiled, (tool, detectable, event) -> startPhoneHome(event.getAggregateTimings()));
     }
 
     public abstract PhoneHomeResponse phoneHome(Map<String, String> metadata, String... artifactModules);
@@ -66,7 +67,7 @@ public abstract class PhoneHomeManager {
         safelyPhoneHome(new HashMap<>());
     }
 
-    private void startPhoneHome(DetectExecutionPhase executionPhase, Set<DetectorType> applicableDetectorTypes) {
+    private void startPhoneHome(DetectTool tool, Detectable detectable, Set<DetectorType> applicableDetectorTypes) {
         if (applicableDetectorTypes != null) {
             String[] artifactModules = applicableDetectorTypes.stream().map(DetectorType::toString).toArray(String[]::new);
             safelyPhoneHome(new HashMap<>(), artifactModules);

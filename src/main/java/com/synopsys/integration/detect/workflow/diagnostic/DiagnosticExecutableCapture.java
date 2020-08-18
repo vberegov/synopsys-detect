@@ -33,9 +33,10 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
-import com.synopsys.integration.detect.workflow.status.DetectExecutionPhase;
+import com.synopsys.integration.detectable.Detectable;
 import com.synopsys.integration.detectable.detectable.executable.ExecutableOutput;
 
 public class DiagnosticExecutableCapture {
@@ -49,7 +50,7 @@ public class DiagnosticExecutableCapture {
         eventSystem.registerListener(Event.Executable, this::executableFinished);
     }
 
-    private void executableFinished(DetectExecutionPhase executionPhase, ExecutableOutput executableOutput) {
+    private void executableFinished(DetectTool tool, Detectable detectable, ExecutableOutput executableOutput) {
         File errorOut = new File(executableDirectory, "EXE-" + executables + "-ERR.xout");
         File standardOut = new File(executableDirectory, "EXE-" + executables + "-STD.xout");
         indexToCommand.put(executables, executableOutput.getCommandDescription());
