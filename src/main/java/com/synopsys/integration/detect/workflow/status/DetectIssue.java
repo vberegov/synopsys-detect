@@ -51,6 +51,7 @@ public class DetectIssue {
         return messages;
     }
 
+    // TODO Now that we have issueId: Does DetectIssueType provide any value anymore? Can we get rid of it?
     private final DetectIssueType type;
     private final DetectTool detectTool;
     private final DetectorType detectorType;

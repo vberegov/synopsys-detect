@@ -24,7 +24,6 @@ package com.synopsys.integration.detect.tool.detector;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,7 +38,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.exception.DetectUserFriendlyException;
 import com.synopsys.integration.detect.exitcode.ExitCodeType;
 import com.synopsys.integration.detect.lifecycle.shutdown.ExitCodeRequest;
@@ -49,9 +47,6 @@ import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
 import com.synopsys.integration.detect.workflow.nameversion.DetectorNameVersionHandler;
 import com.synopsys.integration.detect.workflow.nameversion.PreferredDetectorNameVersionHandler;
-import com.synopsys.integration.detect.workflow.status.DetectIssue;
-import com.synopsys.integration.detect.workflow.status.DetectIssueId;
-import com.synopsys.integration.detect.workflow.status.DetectIssueType;
 import com.synopsys.integration.detect.workflow.status.DetectorStatus;
 import com.synopsys.integration.detect.workflow.status.StatusType;
 import com.synopsys.integration.detect.workflow.status.UnrecognizedPaths;
@@ -121,29 +116,6 @@ public class DetectorTool {
                                            .map(DetectorRule::getDetectorType)
                                            .collect(Collectors.toSet());
         eventSystem.publishEvent(Event.ApplicableCompleted, applicable);
-
-        ///////////////////////
-        // TODO Tempoarary code to show that insufficient issues details are available here in the main project
-        // (where events can be published).
-        // This may be moot: DetectorIssuePublisher is where issues have been actually published
-        logger.info("=======================================\nThe issue details available in DetectorTool are insufficient:");
-        for (DetectorEvaluation detectorEvaluation : rootEvaluation.getOrderedEvaluations()) {
-            if (detectorEvaluation.isApplicable()) {
-                if (!detectorEvaluation.isExtractable()) {
-                    logger.info(String.format("*** extractable detectorType: %s", detectorEvaluation.getDetectorRule().getDetectorType().toString()));
-                    logger.info(String.format("*** extractable description: %s", detectorEvaluation.getExtractabilityMessage()));
-                    // TODO Because the issue details needed aren't available here, this produces lame issues in status.json:
-                    eventSystem.publishEvent(Event.Issue,
-                        new DetectIssue(DetectIssueType.DETECTOR, DetectTool.DETECTOR, detectorEvaluation.getDetectorRule().getDetectorType(), DetectIssueId.DETECTOR_NOT_EXTRACTABLE,
-                            Arrays.asList(detectorEvaluation.getExtractabilityMessage())));
-                } else if (!detectorEvaluation.wasExtractionSuccessful()) {
-                    eventSystem.publishEvent(Event.Issue,
-                        new DetectIssue(DetectIssueType.DETECTOR, DetectTool.DETECTOR, detectorEvaluation.getDetectorRule().getDetectorType(), DetectIssueId.DETECTOR_EXTRACTION_FAILED,
-                            Arrays.asList("TBD ExtractION failed; We need extract() to return details for this case.")));
-                }
-            }
-        }
-        ////////////////////////
         eventSystem.publishEvent(Event.SearchCompleted, rootEvaluation);
 
         logger.info("");
