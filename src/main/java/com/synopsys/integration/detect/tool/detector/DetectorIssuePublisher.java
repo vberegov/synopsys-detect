@@ -28,6 +28,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
@@ -40,6 +43,7 @@ import com.synopsys.integration.detector.base.DetectorEvaluation;
 import com.synopsys.integration.detector.base.DetectorEvaluationTree;
 
 public class DetectorIssuePublisher {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public void publishEvents(EventSystem eventSystem, DetectorEvaluationTree rootEvaluationTree) {
         publishEvents(eventSystem, rootEvaluationTree.asFlatList());
@@ -48,6 +52,15 @@ public class DetectorIssuePublisher {
     private void publishEvents(EventSystem eventSystem, List<DetectorEvaluationTree> trees) {
         final String spacer = "\t\t";
         for (DetectorEvaluationTree tree : trees) {
+            ///////////////////////
+            // TODO TEMP code
+            for (DetectorEvaluation evaluation : tree.getOrderedEvaluations()) {
+                if (evaluation.isApplicable() && !evaluation.isExtractable()) {
+                    logger.info(String.format("*** Got evaluation for detector: %s; extractable failed", evaluation.getDetectorRule().getDetectorType()));
+                    logger.info(String.format("*** Extractability message: %s", evaluation.getExtractabilityMessage()));
+                }
+            }
+            ///////////////////////
             List<DetectorEvaluation> excepted = DetectorEvaluationUtils.filteredChildren(tree, DetectorEvaluation::wasExtractionException);
             List<DetectorEvaluation> failed = DetectorEvaluationUtils.filteredChildren(tree, DetectorEvaluation::wasExtractionFailure);
             List<DetectorEvaluation> notExtractable = DetectorEvaluationUtils.filteredChildren(tree, evaluation -> evaluation.isApplicable() && !evaluation.isExtractable());

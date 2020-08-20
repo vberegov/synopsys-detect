@@ -82,7 +82,6 @@ public class GradleDetectable extends Detectable {
     public DetectableResult extractable() throws DetectableException {
         gradleExe = gradleResolver.resolveGradle(environment);
         if (gradleExe == null) {
-            System.out.println("*** gradle exe not found!");
             return new ExecutableNotFoundDetectableResult("gradle");
         }
 

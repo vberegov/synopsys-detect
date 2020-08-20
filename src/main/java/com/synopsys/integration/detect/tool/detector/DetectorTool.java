@@ -123,18 +123,23 @@ public class DetectorTool {
         eventSystem.publishEvent(Event.ApplicableCompleted, applicable);
 
         ///////////////////////
+        // TODO Tempoarary code to show that insufficient issues details are available here in the main project
+        // (where events can be published).
+        // This may be moot: DetectorIssuePublisher is where issues have been actually published
+        logger.info("=======================================\nThe issue details available in DetectorTool are insufficient:");
         for (DetectorEvaluation detectorEvaluation : rootEvaluation.getOrderedEvaluations()) {
             if (detectorEvaluation.isApplicable()) {
                 if (!detectorEvaluation.isExtractable()) {
                     logger.info(String.format("*** extractable detectorType: %s", detectorEvaluation.getDetectorRule().getDetectorType().toString()));
                     logger.info(String.format("*** extractable description: %s", detectorEvaluation.getExtractabilityMessage()));
+                    // TODO Because the issue details needed aren't available here, this produces lame issues in status.json:
                     eventSystem.publishEvent(Event.Issue,
                         new DetectIssue(DetectIssueType.DETECTOR, DetectTool.DETECTOR, detectorEvaluation.getDetectorRule().getDetectorType(), DetectIssueId.DETECTOR_NOT_EXTRACTABLE,
                             Arrays.asList(detectorEvaluation.getExtractabilityMessage())));
                 } else if (!detectorEvaluation.wasExtractionSuccessful()) {
                     eventSystem.publishEvent(Event.Issue,
                         new DetectIssue(DetectIssueType.DETECTOR, DetectTool.DETECTOR, detectorEvaluation.getDetectorRule().getDetectorType(), DetectIssueId.DETECTOR_EXTRACTION_FAILED,
-                            Arrays.asList("TBD ExtractION failed; We need extract() to return more info for this case.")));
+                            Arrays.asList("TBD ExtractION failed; We need extract() to return details for this case.")));
                 }
             }
         }

@@ -128,7 +128,10 @@ public class DetectorEvaluator {
                 logger.trace("Checking to see if this detector is a fallback detector.");
                 DetectableResult detectableExtractableResult = getDetectableExtractableResult(detectorEvaluationTree, detectorEvaluation);
 
-                // TODO messing around with crude ways to get error info
+                // TODO poking around to see what error details are available here
+                // These are issue details that need to get communicated back to the main project (DetectorTool)
+                // so issue events can be published with those details
+                logger.info("=======================================\nAt least some of the issue details we need are available to DetectorEvaluator:");
                 logger.info(String.format("*** Detector name: %s", detectorEvaluation.getDetectorRule().getDescriptiveName()));
                 logger.info(String.format("*** \tExtractable passed?: %b", detectableExtractableResult.getPassed()));
                 logger.info(String.format("*** \tDescription: %s", detectableExtractableResult.toDescription()));
