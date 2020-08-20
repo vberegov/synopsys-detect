@@ -41,6 +41,7 @@ import com.synopsys.integration.blackduck.codelocation.binaryscanner.BinaryScanB
 import com.synopsys.integration.blackduck.codelocation.binaryscanner.BinaryScanBatchOutput;
 import com.synopsys.integration.blackduck.codelocation.binaryscanner.BinaryScanUploadService;
 import com.synopsys.integration.blackduck.service.BlackDuckServicesFactory;
+import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.exception.DetectUserFriendlyException;
 import com.synopsys.integration.detect.exitcode.ExitCodeType;
 import com.synopsys.integration.detect.lifecycle.shutdown.ExitCodeRequest;
@@ -123,7 +124,8 @@ public class BlackDuckBinaryScannerTool {
         } else {
             logger.warn("Binary scan file did not exist, is not a file or can't be read.");
             eventSystem.publishEvent(Event.StatusSummary, new Status(STATUS_KEY, StatusType.FAILURE));
-            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.BINARY_SCAN, DetectIssueId.BINARY_SCAN_MISSING_FILE, Arrays.asList("Binary scan file did not exist, is not a file or can't be read.")));
+            eventSystem
+                .publishEvent(Event.Issue, new DetectIssue(DetectIssueType.BINARY_SCAN, DetectTool.BINARY_SCAN, DetectIssueId.BINARY_SCAN_MISSING_FILE, Arrays.asList("Binary scan file did not exist, is not a file or can't be read.")));
             eventSystem.publishEvent(Event.ExitCode, new ExitCodeRequest(ExitCodeType.FAILURE_BLACKDUCK_FEATURE_ERROR, STATUS_KEY));
             return BinaryScanToolResult.FAILURE();
         }
@@ -149,7 +151,7 @@ public class BlackDuckBinaryScannerTool {
         } catch (IntegrationException e) {
             logger.error("Failed to upload binary scan file: " + e.getMessage());
             eventSystem.publishEvent(Event.StatusSummary, new Status(STATUS_KEY, StatusType.FAILURE));
-            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.EXCEPTION, DetectIssueId.BINARY_SCAN_UPLOAD_FAILED, Arrays.asList(e.getMessage())));
+            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.EXCEPTION, DetectTool.BINARY_SCAN, DetectIssueId.BINARY_SCAN_UPLOAD_FAILED, Arrays.asList(e.getMessage())));
             throw new DetectUserFriendlyException("Failed to upload binary scan file.", e, ExitCodeType.FAILURE_BLACKDUCK_CONNECTIVITY);
         }
     }

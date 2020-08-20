@@ -71,8 +71,8 @@ public class DiagnosticLogSystem {
         restrictConsoleToDebug();
 
         logger.info("Adding additional log listeners to extractions.");
-        eventSystem.registerListener(Event.ExtractionStarted, (tool, detectable, event) -> startLoggingExtraction(((DetectExtractionEnvironment) event.getExtractionEnvironment()).getExtractionId()));
-        eventSystem.registerListener(Event.ExtractionEnded, (tool, detectable, event) -> stopLoggingExtraction(((DetectExtractionEnvironment) event.getExtractionEnvironment()).getExtractionId()));
+        eventSystem.registerListener(Event.ExtractionStarted, event -> startLoggingExtraction(((DetectExtractionEnvironment) event.getExtractionEnvironment()).getExtractionId()));
+        eventSystem.registerListener(Event.ExtractionEnded, event -> stopLoggingExtraction(((DetectExtractionEnvironment) event.getExtractionEnvironment()).getExtractionId()));
 
         logger.info("Diagnostics is now in control of logging!");
     }

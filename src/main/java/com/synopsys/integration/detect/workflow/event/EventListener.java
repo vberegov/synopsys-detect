@@ -22,9 +22,6 @@
  */
 package com.synopsys.integration.detect.workflow.event;
 
-import com.synopsys.integration.detect.DetectTool;
-import com.synopsys.integration.detectable.Detectable;
-
 public interface EventListener<T> {
-    void eventOccured(DetectTool tool, Detectable detectable, T event);
+    void eventOccured(T event);
 }

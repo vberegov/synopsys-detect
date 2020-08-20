@@ -24,13 +24,11 @@ package com.synopsys.integration.detect.tool.detector;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
 import com.synopsys.integration.detect.workflow.nameversion.DetectorNameVersionHandler;
 import com.synopsys.integration.detect.workflow.nameversion.DetectorProjectInfo;
 import com.synopsys.integration.detect.workflow.nameversion.DetectorProjectInfoMetadata;
-import com.synopsys.integration.detectable.Detectable;
 import com.synopsys.integration.detector.base.DetectorEvaluation;
 import com.synopsys.integration.detector.evaluation.DiscoveryFilter;
 import com.synopsys.integration.util.NameVersion;
@@ -44,7 +42,7 @@ public class DetectDiscoveryFilter implements DiscoveryFilter {
         eventSystem.registerListener(Event.DiscoveryEnded, this::discoveryEnded);
     }
 
-    public void discoveryEnded(DetectTool tool, Detectable detectable, DetectorEvaluation detectorEvaluation) {
+    public void discoveryEnded(DetectorEvaluation detectorEvaluation) {
         DetectorProjectInfo info = toProjectInfo(detectorEvaluation);
         if (info != null) {
             detectorNameVersionHandler.accept(info);

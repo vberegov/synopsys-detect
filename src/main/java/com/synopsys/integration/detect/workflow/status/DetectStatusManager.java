@@ -25,12 +25,10 @@ package com.synopsys.integration.detect.workflow.status;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.exitcode.ExitCodeType;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
 import com.synopsys.integration.detect.workflow.result.DetectResult;
-import com.synopsys.integration.detectable.Detectable;
 import com.synopsys.integration.log.IntLogger;
 
 public class DetectStatusManager {
@@ -44,15 +42,15 @@ public class DetectStatusManager {
         eventSystem.registerListener(Event.ResultProduced, this::addDetectResult);
     }
 
-    public void addStatusSummary(DetectTool tool, Detectable detectable, Status status) {
+    public void addStatusSummary(Status status) {
         statusSummaries.add(status);
     }
 
-    public void addIssue(DetectTool tool, Detectable detectable, DetectIssue issue) {
+    public void addIssue(DetectIssue issue) {
         detectIssues.add(issue);
     }
 
-    public void addDetectResult(DetectTool tool, Detectable detectable, DetectResult detectResult) {
+    public void addDetectResult(DetectResult detectResult) {
         detectResults.add(detectResult);
     }
 

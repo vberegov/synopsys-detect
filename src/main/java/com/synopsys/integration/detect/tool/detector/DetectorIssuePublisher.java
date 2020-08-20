@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
 import com.synopsys.integration.detect.workflow.report.ExceptionUtil;
@@ -65,7 +66,8 @@ public class DetectorIssuePublisher {
 
             if (messages.size() > 0) {
                 messages.add(0, tree.getDirectory().toString());
-                eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, DetectIssueId.DETECTOR_FAILED, messages));
+                // TODO Need detectorType
+                eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, DetectTool.DETECTOR, null, DetectIssueId.DETECTOR_FAILED, messages));
             }
         }
     }

@@ -33,10 +33,8 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
-import com.synopsys.integration.detectable.Detectable;
 
 public class DiagnosticFileCapture {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -49,7 +47,7 @@ public class DiagnosticFileCapture {
         eventSystem.registerListener(Event.CustomerFileOfInterest, this::fileFound);
     }
 
-    private void fileFound(DetectTool tool, Detectable detectable, File foundFile) {
+    private void fileFound(File foundFile) {
         File savedFile = new File(fileDirectory, "FILE-" + files + "-" + foundFile.getName());
         fileNames.put(files, foundFile.toString());
 

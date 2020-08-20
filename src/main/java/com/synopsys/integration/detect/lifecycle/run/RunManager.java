@@ -154,7 +154,6 @@ public class RunManager {
         } else {
             logger.info("Polaris tools will not be run.");
         }
-        eventSystem.setTool(null);
         UniversalToolsResult universalToolsResult = runUniversalProjectTools(detectConfiguration, detectConfigurationFactory, directoryManager, eventSystem, detectDetectableFactory, runResult, runOptions, detectToolFilter,
             codeLocationNameManager);
 
@@ -168,7 +167,6 @@ public class RunManager {
         }
 
         logger.info("All tools have finished.");
-        eventSystem.setTool(null);
         logger.info(ReportConstants.RUN_SEPARATOR);
 
         return runResult;
@@ -204,7 +202,6 @@ public class RunManager {
         boolean anythingFailed = false;
 
         logger.info(ReportConstants.RUN_SEPARATOR);
-        eventSystem.setTool(DetectTool.DOCKER);
         if (detectToolFilter.shouldInclude(DetectTool.DOCKER)) {
             logger.info("Will include the Docker tool.");
             DetectableTool detectableTool = new DetectableTool(detectDetectableFactory::createDockerDetectable,
@@ -222,7 +219,6 @@ public class RunManager {
         }
 
         logger.info(ReportConstants.RUN_SEPARATOR);
-        eventSystem.setTool(DetectTool.BAZEL);
         if (detectToolFilter.shouldInclude(DetectTool.BAZEL)) {
             logger.info("Will include the Bazel tool.");
             DetectableTool detectableTool = new DetectableTool(detectDetectableFactory::createBazelDetectable,
@@ -237,7 +233,6 @@ public class RunManager {
         }
 
         logger.info(ReportConstants.RUN_SEPARATOR);
-        eventSystem.setTool(DetectTool.DETECTOR);
         if (detectToolFilter.shouldInclude(DetectTool.DETECTOR)) {
             logger.info("Will include the detector tool.");
             String projectBomTool = detectConfiguration.getValueOrEmpty(DetectProperties.Companion.getDETECT_PROJECT_DETECTOR()).orElse(null);
@@ -266,7 +261,6 @@ public class RunManager {
         } else {
             logger.info("Detector tool will not be run.");
         }
-        eventSystem.setTool(null);
         logger.info(ReportConstants.RUN_SEPARATOR);
         logger.debug("Completed code location tools.");
 
@@ -289,7 +283,6 @@ public class RunManager {
 
     private void runPolarisProduct(ProductRunData productRunData, PropertyConfiguration detectConfiguration, DirectoryManager directoryManager, EventSystem eventSystem,
         DetectToolFilter detectToolFilter) {
-        eventSystem.setTool(DetectTool.POLARIS);
         logger.info(ReportConstants.RUN_SEPARATOR);
         if (detectToolFilter.shouldInclude(DetectTool.POLARIS)) {
             logger.info("Will include the Polaris tool.");
@@ -301,13 +294,11 @@ public class RunManager {
         } else {
             logger.info("Polaris CLI tool will not be run.");
         }
-        eventSystem.setTool(null);
     }
 
     private void runBlackDuckProduct(ProductRunData productRunData, DetectConfigurationFactory detectConfigurationFactory, DirectoryManager directoryManager, EventSystem eventSystem,
         CodeLocationNameManager codeLocationNameManager, BdioCodeLocationCreator bdioCodeLocationCreator, DetectInfo detectInfo, RunResult runResult, RunOptions runOptions,
         DetectToolFilter detectToolFilter, NameVersion projectNameVersion, AggregateOptions aggregateOptions, ImpactAnalysisOptions impactAnalysisOptions) throws IntegrationException, DetectUserFriendlyException {
-        eventSystem.setTool(null);
         logger.debug("Black Duck tools will run.");
 
         BlackDuckRunData blackDuckRunData = productRunData.getBlackDuckRunData();
@@ -376,7 +367,6 @@ public class RunManager {
 
         logger.info(ReportConstants.RUN_SEPARATOR);
         if (detectToolFilter.shouldInclude(DetectTool.SIGNATURE_SCAN)) {
-            eventSystem.setTool(DetectTool.SIGNATURE_SCAN);
             logger.info("Will include the signature scanner tool.");
             BlackDuckSignatureScannerOptions blackDuckSignatureScannerOptions = detectConfigurationFactory.createBlackDuckSignatureScannerOptions();
             BlackDuckSignatureScannerTool blackDuckSignatureScannerTool = new BlackDuckSignatureScannerTool(blackDuckSignatureScannerOptions, detectContext);
@@ -385,7 +375,7 @@ public class RunManager {
                 codeLocationWaitController.addWaitForCreationData(signatureScannerToolResult.getCreationData().get(), eventSystem);
             } else if (signatureScannerToolResult.getResult() != Result.SUCCESS) {
                 eventSystem.publishEvent(Event.StatusSummary, new Status("SIGNATURE_SCAN", StatusType.FAILURE));
-                eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.SIGNATURE_SCANNER, DetectIssueId.SIGNATURE_SCAN_FAILED, Arrays.asList(signatureScannerToolResult.getResult().toString())));
+                eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.SIGNATURE_SCANNER, DetectTool.SIGNATURE_SCAN, DetectIssueId.SIGNATURE_SCAN_FAILED, Arrays.asList(signatureScannerToolResult.getResult().toString())));
             }
             logger.info("Signature scanner actions finished.");
         } else {
@@ -394,7 +384,6 @@ public class RunManager {
 
         logger.info(ReportConstants.RUN_SEPARATOR);
         if (detectToolFilter.shouldInclude(DetectTool.BINARY_SCAN)) {
-            eventSystem.setTool(DetectTool.BINARY_SCAN);
             logger.info("Will include the binary scanner tool.");
             if (null != blackDuckServicesFactory) {
                 BinaryScanOptions binaryScanOptions = detectConfigurationFactory.createBinaryScanOptions();
@@ -419,7 +408,6 @@ public class RunManager {
             blackDuckImpactAnalysisTool = BlackDuckImpactAnalysisTool.OFFLINE(directoryManager, codeLocationNameManager, impactAnalysisOptions, eventSystem);
         }
         if (detectToolFilter.shouldInclude(DetectTool.IMPACT_ANALYSIS) && blackDuckImpactAnalysisTool.shouldRun()) {
-            eventSystem.setTool(DetectTool.IMPACT_ANALYSIS);
             logger.info("Will include the Vulnerability Impact Analysis tool.");
             ImpactAnalysisToolResult impactAnalysisToolResult = blackDuckImpactAnalysisTool.performImpactAnalysisActions(projectNameVersion, projectVersionWrapper);
 
@@ -435,7 +423,6 @@ public class RunManager {
         } else {
             logger.info("Vulnerability Impact Analysis tool will not be run.");
         }
-        eventSystem.setTool(null);
 
         logger.info(ReportConstants.RUN_SEPARATOR);
         if (null != blackDuckServicesFactory) {

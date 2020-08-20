@@ -30,27 +30,13 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.synopsys.integration.detect.DetectTool;
-import com.synopsys.integration.detectable.Detectable;
-
 public class EventSystem {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Map<EventType, List<EventListener>> eventListenerMap = new HashMap<>();
-    private DetectTool tool;
-    private Detectable detectable;
-
-    public void setTool(DetectTool tool) {
-        logger.info(String.format("*** tool set to %s", tool));
-        this.tool = tool;
-    }
-
-    public void setDetectable(Detectable detectable) {
-        this.detectable = detectable;
-    }
 
     public <T> void publishEvent(EventType<T> event, T payload) {
         for (EventListener listener : safelyGetListeners(event)) {
-            listener.eventOccured(tool, detectable, payload);
+            listener.eventOccured(payload);
         }
     }
 

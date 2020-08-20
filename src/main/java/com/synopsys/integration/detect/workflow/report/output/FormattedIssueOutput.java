@@ -25,18 +25,18 @@ package com.synopsys.integration.detect.workflow.report.output;
 import java.util.List;
 
 import com.synopsys.integration.detect.DetectTool;
-import com.synopsys.integration.detectable.Detectable;
+import com.synopsys.integration.detector.base.DetectorType;
 
 public class FormattedIssueOutput {
     public final DetectTool tool;
-    public final Detectable detectable;
+    public final DetectorType detectorType;
     public final String type;
     public final String id;
     public final List<String> messages;
 
-    public FormattedIssueOutput(DetectTool tool, Detectable detectable, String type, String id, List<String> messages) {
+    public FormattedIssueOutput(DetectTool tool, DetectorType detectorType, String type, String id, List<String> messages) {
         this.tool = tool;
-        this.detectable = detectable;
+        this.detectorType = detectorType;
         this.type = type;
         this.id = id;
         this.messages = messages;

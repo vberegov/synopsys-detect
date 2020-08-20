@@ -41,6 +41,7 @@ import com.synopsys.integration.blackduck.codelocation.signaturescanner.ScanBatc
 import com.synopsys.integration.blackduck.codelocation.signaturescanner.command.ScanCommandOutput;
 import com.synopsys.integration.blackduck.codelocation.signaturescanner.command.ScanTarget;
 import com.synopsys.integration.blackduck.configuration.BlackDuckServerConfig;
+import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.exception.DetectUserFriendlyException;
 import com.synopsys.integration.detect.exitcode.ExitCodeType;
 import com.synopsys.integration.detect.lifecycle.shutdown.ExitCodeRequest;
@@ -137,7 +138,7 @@ public class BlackDuckSignatureScanner {
         if (!signatureScannerReport.hasOutput()) {
             String errorMessage = String.format("Scanning target %s was never scanned by the BlackDuck CLI.", scanTargetPath);
             logger.info(errorMessage);
-            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.SIGNATURE_SCANNER, DetectIssueId.SIGNATURE_SCAN_MISSING_RESULTS, Collections.singletonList(errorMessage)));
+            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.SIGNATURE_SCANNER, DetectTool.SIGNATURE_SCAN, DetectIssueId.SIGNATURE_SCAN_MISSING_RESULTS, Collections.singletonList(errorMessage)));
         } else {
             String errorMessage = signatureScannerReport.getErrorMessage()
                                       .map(message -> String.format("Scanning target %s failed: %s", scanTargetPath, message))
@@ -145,7 +146,7 @@ public class BlackDuckSignatureScanner {
             logger.error(errorMessage);
             signatureScannerReport.getException().ifPresent(exception -> logger.debug(errorMessage, exception));
 
-            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.SIGNATURE_SCANNER, DetectIssueId.SIGNATURE_SCAN_ERROR_LOGGED, Collections.singletonList(errorMessage)));
+            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.SIGNATURE_SCANNER, DetectTool.SIGNATURE_SCAN, DetectIssueId.SIGNATURE_SCAN_ERROR_LOGGED, Collections.singletonList(errorMessage)));
         }
 
         eventSystem.publishEvent(Event.StatusSummary, new SignatureScanStatus(signatureScannerReport.getSignatureScanPath().getTargetCanonicalPath(), StatusType.FAILURE));

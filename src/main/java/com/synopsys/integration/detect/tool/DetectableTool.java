@@ -104,7 +104,8 @@ public class DetectableTool {
         if (!extractable.getPassed()) {
             logger.error("Was not extractable: " + extractable.toDescription());
             eventSystem.publishEvent(Event.StatusSummary, new Status(name, StatusType.FAILURE));
-            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, DetectIssueId.DETECTOR_NOT_EXTRACTABLE, Arrays.asList(extractable.toDescription())));
+            // TODO Need detectorType:
+            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, DetectTool.DETECTOR, null, DetectIssueId.DETECTOR_NOT_EXTRACTABLE, Arrays.asList(extractable.toDescription())));
             eventSystem.publishEvent(Event.ExitCode, new ExitCodeRequest(ExitCodeType.FAILURE_GENERAL_ERROR, extractable.toDescription()));
             return DetectableToolResult.failed(extractable);
         }
@@ -117,7 +118,8 @@ public class DetectableTool {
         if (!extraction.isSuccess()) {
             logger.error("Extraction was not success.");
             eventSystem.publishEvent(Event.StatusSummary, new Status(name, StatusType.FAILURE));
-            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, DetectIssueId.DETECTOR_EXTRACTION_FAILED, Arrays.asList(extraction.getDescription())));
+            // TODO need detectorType
+            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.DETECTOR, DetectTool.DETECTOR, null, DetectIssueId.DETECTOR_EXTRACTION_FAILED, Arrays.asList(extraction.getDescription())));
             eventSystem.publishEvent(Event.ExitCode, new ExitCodeRequest(ExitCodeType.FAILURE_GENERAL_ERROR, extractable.toDescription()));
             return DetectableToolResult.failed();
         } else {

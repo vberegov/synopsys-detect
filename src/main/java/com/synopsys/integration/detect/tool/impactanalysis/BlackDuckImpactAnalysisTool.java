@@ -40,6 +40,7 @@ import com.synopsys.integration.blackduck.service.BlackDuckService;
 import com.synopsys.integration.blackduck.service.BlackDuckServicesFactory;
 import com.synopsys.integration.blackduck.service.dataservice.CodeLocationService;
 import com.synopsys.integration.blackduck.service.model.ProjectVersionWrapper;
+import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.exception.DetectUserFriendlyException;
 import com.synopsys.integration.detect.exitcode.ExitCodeType;
 import com.synopsys.integration.detect.lifecycle.shutdown.ExitCodeRequest;
@@ -162,7 +163,7 @@ public class BlackDuckImpactAnalysisTool {
         } catch (IntegrationException exception) {
             logger.error(String.format("Failed to upload impact analysis file: %s", exception.getMessage()));
             eventSystem.publishEvent(Event.StatusSummary, new Status(STATUS_KEY, StatusType.FAILURE));
-            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.EXCEPTION, DetectIssueId.IMPACT_ANALYSIS_UPLOAD_FAILED, Collections.singletonList(exception.getMessage())));
+            eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.EXCEPTION, DetectTool.IMPACT_ANALYSIS, DetectIssueId.IMPACT_ANALYSIS_UPLOAD_FAILED, Collections.singletonList(exception.getMessage())));
             throw new DetectUserFriendlyException("Failed to upload impact analysis file.", exception, ExitCodeType.FAILURE_BLACKDUCK_CONNECTIVITY);
         }
     }
@@ -200,7 +201,7 @@ public class BlackDuckImpactAnalysisTool {
     private ImpactAnalysisToolResult failImpactAnalysis(String issueMessage) {
         logger.warn(issueMessage);
         eventSystem.publishEvent(Event.StatusSummary, new Status(STATUS_KEY, StatusType.FAILURE));
-        eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.IMPACT_ANALYSIS, DetectIssueId.IMPACT_ANALYSIS_GENERATION_FAILED, Collections.singletonList(issueMessage)));
+        eventSystem.publishEvent(Event.Issue, new DetectIssue(DetectIssueType.IMPACT_ANALYSIS, DetectTool.IMPACT_ANALYSIS, DetectIssueId.IMPACT_ANALYSIS_GENERATION_FAILED, Collections.singletonList(issueMessage)));
         eventSystem.publishEvent(Event.ExitCode, new ExitCodeRequest(ExitCodeType.FAILURE_BLACKDUCK_FEATURE_ERROR, STATUS_KEY));
         return ImpactAnalysisToolResult.FAILURE();
     }

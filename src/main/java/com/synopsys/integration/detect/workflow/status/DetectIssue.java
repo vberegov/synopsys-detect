@@ -25,12 +25,22 @@ package com.synopsys.integration.detect.workflow.status;
 import java.util.Arrays;
 import java.util.List;
 
+import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
+import com.synopsys.integration.detector.base.DetectorType;
 
 public class DetectIssue {
     public DetectIssueType getType() {
         return type;
+    }
+
+    public DetectTool getDetectTool() {
+        return detectTool;
+    }
+
+    public DetectorType getDetectorType() {
+        return detectorType;
     }
 
     public DetectIssueId getId() {
@@ -42,16 +52,36 @@ public class DetectIssue {
     }
 
     private final DetectIssueType type;
+    private final DetectTool detectTool;
+    private final DetectorType detectorType;
     private final DetectIssueId id;
     private final List<String> messages;
 
     public DetectIssue(DetectIssueType type, DetectIssueId id, List<String> messages) {
+        this(type, null, null, id, messages);
+    }
+
+    public DetectIssue(DetectIssueType type, DetectTool detectTool, DetectIssueId id, List<String> messages) {
+        this(type, detectTool, null, id, messages);
+    }
+
+    public DetectIssue(DetectIssueType type, DetectTool detectTool, DetectorType detectorType, DetectIssueId id, List<String> messages) {
         this.type = type;
+        this.detectTool = detectTool;
+        this.detectorType = detectorType;
         this.id = id;
         this.messages = messages;
     }
 
     public static void publish(EventSystem eventSystem, DetectIssueType type, DetectIssueId id, String... messages) {
         eventSystem.publishEvent(Event.Issue, new DetectIssue(type, id, Arrays.asList(messages)));
+    }
+
+    public static void publish(EventSystem eventSystem, DetectIssueType type, DetectTool detectTool, DetectIssueId id, String... messages) {
+        eventSystem.publishEvent(Event.Issue, new DetectIssue(type, detectTool, id, Arrays.asList(messages)));
+    }
+
+    public static void publish(EventSystem eventSystem, DetectIssueType type, DetectTool detectTool, DetectorType detectorType, DetectIssueId id, String... messages) {
+        eventSystem.publishEvent(Event.Issue, new DetectIssue(type, detectTool, detectorType, id, Arrays.asList(messages)));
     }
 }

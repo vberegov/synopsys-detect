@@ -25,11 +25,9 @@ package com.synopsys.integration.detect.lifecycle.shutdown;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.synopsys.integration.detect.DetectTool;
 import com.synopsys.integration.detect.exitcode.ExitCodeType;
 import com.synopsys.integration.detect.workflow.event.Event;
 import com.synopsys.integration.detect.workflow.event.EventSystem;
-import com.synopsys.integration.detectable.Detectable;
 
 public class ExitCodeManager {
     private final List<ExitCodeRequest> exitCodeRequests = new ArrayList<>();
@@ -48,7 +46,7 @@ public class ExitCodeManager {
         exitCodeRequests.add(new ExitCodeRequest(exitCodeType));
     }
 
-    public void addExitCodeRequest(DetectTool tool, Detectable detectable, ExitCodeRequest request) {
+    public void addExitCodeRequest(ExitCodeRequest request) {
         exitCodeRequests.add(request);
     }
 
