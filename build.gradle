@@ -231,8 +231,6 @@ task signJar() {
 
 task libraryJar(type: Jar, dependsOn: build) {
     baseName = "${project.name}-lib"
-    from {
-      configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+    //from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
