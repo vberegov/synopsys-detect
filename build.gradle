@@ -22,18 +22,23 @@ buildscript {
 
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.31' apply false
+    id "com.github.johnrengelman.shadow" version "5.2.0"
 }
 
 group = 'com.synopsys.integration'
 version = '6.7.0-SNAPSHOT'
 
-apply plugin: 'com.synopsys.integration.solution'
+apply plugin: 'com.synopsys.integration.library'
 apply plugin: 'org.springframework.boot'
 
 apply from: 'docs.gradle'
 
 def createArtifactName() {
     return "${buildDir}/libs/${project.name}-${version}.jar"
+}
+
+def createLibArtifactName() {
+    return "${buildDir}/libs/${project.name}-lib-${version}.jar"
 }
 
 def createBatteryPath() {
@@ -45,13 +50,13 @@ allprojects {
     apply plugin: 'io.spring.dependency-management'
 
     dependencies {
-        implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-        implementation 'org.jetbrains.kotlin:kotlin-reflect'
-        implementation "com.synopsys.integration:blackduck-common:${blackDuckCommonVersion}"
-        implementation 'com.paypal.digraph:digraph-parser:1.0'
-        implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.0'
-        implementation 'com.fasterxml.jackson.core:jackson-core:2.10.0'
-        implementation 'com.synopsys:method-analyzer-core:0.1.0'
+        api 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+        api 'org.jetbrains.kotlin:kotlin-reflect'
+        api "com.synopsys.integration:blackduck-common:${blackDuckCommonVersion}"
+        api 'com.paypal.digraph:digraph-parser:1.0'
+        api 'com.fasterxml.jackson.core:jackson-databind:2.10.0'
+        api 'com.fasterxml.jackson.core:jackson-core:2.10.0'
+        api 'com.synopsys:method-analyzer-core:0.1.0'
 
         testImplementation 'org.mockito:mockito-core:2.+'
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
@@ -76,8 +81,10 @@ subprojects {
 
 publishing {
     publications {
+	// TEMP: For now, I've simply changed jarName here so it publishes the lib jar
+	// Maybe use classifiers to publish multiple .jars
         mavenJava(MavenPublication) {
-            def jarName = createArtifactName()
+            def jarName = createLibArtifactName()
             artifact(jarName)
         }
     }
@@ -101,19 +108,20 @@ dependencies {
     implementation project(':detectable')
     implementation project(':detector')
 
-    implementation 'org.zeroturnaround:zt-zip:1.13'
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-    implementation 'org.jetbrains.kotlin:kotlin-reflect'
-    implementation "com.synopsys.integration:polaris-common:${polarisCommonVersion}"
-    implementation 'org.yaml:snakeyaml:1.24'
+    // "api" (here and in subprojects) gets these dependencies into the published pom
+    api 'org.zeroturnaround:zt-zip:1.13'
+    api 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    api 'org.jetbrains.kotlin:kotlin-reflect'
+    api "com.synopsys.integration:polaris-common:${polarisCommonVersion}"
+    api 'org.yaml:snakeyaml:1.24'
 
-    implementation 'org.apache.maven.shared:maven-invoker:3.0.0'
-    implementation 'com.esotericsoftware.yamlbeans:yamlbeans:1.11'
-    implementation 'com.moandjiezana.toml:toml4j:0.7.1'
-    implementation 'org.freemarker:freemarker:2.3.26-incubating'
-    implementation 'org.springframework.boot:spring-boot-starter'
+    api 'org.apache.maven.shared:maven-invoker:3.0.0'
+    api 'com.esotericsoftware.yamlbeans:yamlbeans:1.11'
+    api 'com.moandjiezana.toml:toml4j:0.7.1'
+    api 'org.freemarker:freemarker:2.3.26-incubating'
+    api 'org.springframework.boot:spring-boot-starter'
 
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.8'
+    api 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.8'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
@@ -229,8 +237,39 @@ task signJar() {
     }
 }
 
-task libraryJar(type: Jar, dependsOn: build) {
+task libraryJarMissingSubProjects(type: Jar, dependsOn: build) {
     baseName = "${project.name}-lib"
     //from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
+}
+
+task libraryJar( type: Jar, dependsOn: build ) {
+    baseName = "${project.name}-lib"
+
+    // This includes subprojects' classes in the .jar, but:
+    // Unfortunately the published pom includes the subprojects (.jars) as runtime dependencies
+    subprojects.each { subproject ->
+        from subproject.configurations.archives.allArtifacts.files.collect {
+            zipTree(it)
+        }
+    }
+
+    // Need this for main project classes 
+    from sourceSets.main.runtimeClasspath
+}
+
+configurations {
+    subprojectimpl.extendsFrom implementation
+}
+
+shadowJar {
+    configurations = [project.configurations.subprojectimpl]
+    //exclude { it.file in configurations.apiDependenciesMetadata.files }
+}
+
+jar {
+    enabled = true
+    baseName = "${project.name}-lib"
+    from sourceSets.main.runtimeClasspath
+    //include { it.file in configurations.subprojectimpl.files }
 }
