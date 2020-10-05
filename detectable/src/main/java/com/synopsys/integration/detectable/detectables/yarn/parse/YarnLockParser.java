@@ -24,12 +24,16 @@ package com.synopsys.integration.detectable.detectables.yarn.parse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class YarnLockParser {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String COMMENT_PREFIX = "#";
     private static final String VERSION_PREFIX = "version \"";
     private static final String VERSION_SUFFIX = "\"";
@@ -70,7 +74,10 @@ public class YarnLockParser {
             } else if (level == 1 && trimmedLine.startsWith(OPTIONAL_DEPENDENCIES_TOKEN)) {
                 inOptionalDependencies = true;
             } else if (level == 2) {
-                dependencies.add(parseDependencyFromLine(trimmedLine, inOptionalDependencies));
+                Optional<YarnLockDependency> dep = parseDependencyFromLine(trimmedLine, inOptionalDependencies);
+                if (dep.isPresent()) {
+                    dependencies.add(dep.get());
+                }
             }
         }
         if (StringUtils.isNotBlank(resolvedVersion)) {
@@ -108,9 +115,14 @@ public class YarnLockParser {
         return count;
     }
 
-    private YarnLockDependency parseDependencyFromLine(String line, boolean optional) {
+    private Optional<YarnLockDependency> parseDependencyFromLine(String line, boolean optional) {
         String[] pieces = StringUtils.split(line, " ", 2);
-        return new YarnLockDependency(removeWrappingQuotes(pieces[0]), removeWrappingQuotes(pieces[1]), optional);
+        if (pieces.length < 2) {
+            logger.debug(String.format("Unable to parse dependency from Yarn lock line: '%s'", line));
+            return Optional.empty();
+        }
+        YarnLockDependency dep = new YarnLockDependency(removeWrappingQuotes(pieces[0]), removeWrappingQuotes(pieces[1]), optional);
+        return Optional.of(dep);
     }
 
     private String removeWrappingQuotes(String s) {
