@@ -28,14 +28,21 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class YarnLockParser {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String COMMENT_PREFIX = "#";
     private static final String VERSION_PREFIX = "version \"";
     private static final String VERSION_SUFFIX = "\"";
     private static final String OPTIONAL_DEPENDENCIES_TOKEN = "optionalDependencies:";
 
     public YarnLock parseYarnLock(List<String> yarnLockFileAsList) {
+        for (String yarnLockFileLine : yarnLockFileAsList) {
+            logger.debug(String.format("yarnLockFileLine: '%s'", yarnLockFileLine));
+        }
+
         List<YarnLockEntry> entries = new ArrayList<>();
         String resolvedVersion = "";
         List<YarnLockDependency> dependencies = new ArrayList<>();
@@ -56,9 +63,9 @@ public class YarnLockParser {
         List<String> yarnLinesThatMatter = cleanedYarnLockFileAsList.subList(indexOfFirstLevelZeroLine + 1, cleanedYarnLockFileAsList.size());
 
         for (String line : yarnLinesThatMatter) {
-
             String trimmedLine = line.trim();
             int level = countIndent(line);
+            logger.debug(String.format("(level %d) Trimmed line '%s' to '%s'", level, line, trimmedLine));
             if (level == 0) {
                 entries.add(new YarnLockEntry(ids, resolvedVersion, dependencies));
                 resolvedVersion = "";
@@ -110,6 +117,10 @@ public class YarnLockParser {
 
     private YarnLockDependency parseDependencyFromLine(String line, boolean optional) {
         String[] pieces = StringUtils.split(line, " ", 2);
+        logger.debug(String.format("Split line '%s' and got %d parts", line, pieces.length));
+        if (pieces.length < 2) {
+            logger.error(String.format("Invalid line: '%s'", line));
+        }
         return new YarnLockDependency(removeWrappingQuotes(pieces[0]), removeWrappingQuotes(pieces[1]), optional);
     }
 
