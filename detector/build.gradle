@@ -1,3 +1,9 @@
 dependencies {
     implementation project(':detectable')
+
+    // TBD better way? Used to be part of detectable's api
+    shadow 'com.synopsys.integration:integration-common:23.0.0'
+
+    // TBD better way?
+    testImplementation 'com.synopsys.integration:integration-common:23.0.0'
 }
