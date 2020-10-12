@@ -15,7 +15,12 @@ buildscript {
 
     dependencies {
         classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
     }
+}
+
+plugins {
+    id "com.github.johnrengelman.shadow" version "5.1.0"
 }
 
 group = 'com.synopsys.integration'
@@ -39,6 +44,7 @@ subprojects {
     group = rootProject.group
     version = rootProject.version
     apply plugin: 'com.synopsys.integration.simple'
+    apply plugin: 'com.github.johnrengelman.shadow'
 
     license {
         header rootProject.file('LICENSE')
@@ -54,6 +60,11 @@ allprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
         testImplementation 'org.mockito:mockito-core:2.+'
     }
+}
+
+shadowJar {
+    classifier = null
+    archiveBaseName.set('synopsys-detect-lib')
 }
 
 publishing {
@@ -84,25 +95,34 @@ dependencies {
     implementation project(':detectable')
     implementation project(':detector')
 
-    implementation 'ch.qos.logback:logback-classic:1.2.3'
+    // shadow dependencies are NOT written to the shadow .jar (they are transitive dependencies of it)
+    shadow 'ch.qos.logback:logback-classic:1.2.3'
 
-    implementation 'com.esotericsoftware.yamlbeans:yamlbeans:1.11'
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.8'
-    implementation "com.synopsys.integration:polaris-common:${polarisCommonVersion}"
-    implementation "com.synopsys.integration:blackduck-common:${blackDuckCommonVersion}"
-    implementation 'com.synopsys:method-analyzer-core:0.1.0'
+    shadow 'com.esotericsoftware.yamlbeans:yamlbeans:1.11'
+    shadow 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.8'
+    shadow "com.synopsys.integration:polaris-common:${polarisCommonVersion}"
+    shadow "com.synopsys.integration:blackduck-common:${blackDuckCommonVersion}"
+    shadow 'com.synopsys:method-analyzer-core:0.1.0'
 
-    implementation 'org.apache.maven.shared:maven-invoker:3.0.0'
-    implementation "org.springframework.boot:spring-boot"
-    implementation 'org.yaml:snakeyaml:1.24'
-    implementation 'org.zeroturnaround:zt-zip:1.13'
-    implementation 'org.freemarker:freemarker:2.3.26-incubating'
+    shadow 'org.apache.maven.shared:maven-invoker:3.0.0'
+    shadow "org.springframework.boot:spring-boot"
+    shadow 'org.yaml:snakeyaml:1.24'
+    shadow 'org.zeroturnaround:zt-zip:1.13'
+    shadow 'org.freemarker:freemarker:2.3.26-incubating'
 
     // spring-boot-starter-test *can* provide these, but we choose to be more explicit about the dependencies we ACTUALLY use
     testImplementation 'org.assertj:assertj-core:3.13.2'
     testImplementation 'org.skyscreamer:jsonassert:1.5.0'
 
     testImplementation project(':configuration').sourceSets.test.output
+
+    // TBD: shadow dependencies not automatically available for tests
+    // Is there a better way to fix than repeating here?:
+    testImplementation "org.springframework.boot:spring-boot"
+    testImplementation 'org.freemarker:freemarker:2.3.26-incubating'
+    testImplementation "com.synopsys.integration:polaris-common:${polarisCommonVersion}"
+    testImplementation "com.synopsys.integration:blackduck-common:${blackDuckCommonVersion}"
+    testImplementation 'org.zeroturnaround:zt-zip:1.13'
 }
 
 springBoot { mainClassName = 'com.synopsys.integration.detect.Application' }
