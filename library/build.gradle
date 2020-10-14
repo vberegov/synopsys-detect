@@ -1,0 +1,53 @@
+plugins {
+    //id 'java'
+    //id 'maven'
+    id 'maven-publish'
+    id "com.github.johnrengelman.shadow" version "5.1.0"
+    id "com.jfrog.artifactory" //version "4.10.0"
+}
+
+//apply plugin: 'io.spring.dependency-management'
+
+repositories {
+    jcenter()
+    maven {
+        url "https://mvnrepository.com/artifact/org.springframework.boot/spring-boot"
+    }
+}
+
+dependencies {
+    implementation rootProject
+
+    implementation project(':common')
+    implementation project(':configuration')
+    implementation project(':detectable')
+    implementation project(':detector')
+    implementation project(':polaris')
+
+    shadow 'ch.qos.logback:logback-classic:1.2.3'
+
+    shadow 'com.esotericsoftware.yamlbeans:yamlbeans:1.11'
+    shadow 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.8'
+    shadow "com.synopsys.integration:blackduck-common:${blackDuckCommonVersion}"
+    shadow 'com.synopsys:method-analyzer-core:0.1.0'
+
+    shadow 'org.apache.maven.shared:maven-invoker:3.0.0'
+
+    // TBD get this from ${springBootVersion}
+    implementation group: 'org.springframework.boot', name: 'spring-boot', version: '2.2.4.RELEASE'
+    shadow group: 'org.springframework.boot', name: 'spring-boot-dependencies', version: '2.2.4.RELEASE'
+    //implementation('org.springframework.boot:spring-boot-dependencies:2.2.4.RELEASE')
+
+    shadow 'org.yaml:snakeyaml:1.24'
+    shadow 'org.zeroturnaround:zt-zip:1.13'
+    shadow 'org.freemarker:freemarker:2.3.26-incubating'
+}
+
+shadowJar {
+   classifier = null
+   // This renames both the .jar and the .pom
+   archiveBaseName.set('synopsys-detect-lib')
+}
+
+build.dependsOn shadowJar
+
