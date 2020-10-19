@@ -13,4 +13,7 @@ dependencies {
 
     testImplementation "org.springframework:spring-test"
     testImplementation "org.apache.commons:commons-collections4:4.2"
+
+    // dupl:
+    implementation "org.slf4j:slf4j-api:1.7.30"
 }

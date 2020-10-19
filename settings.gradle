@@ -5,5 +5,6 @@ include 'detector'
 include 'configuration'
 include 'common'
 include 'polaris'
+include 'application'
 include 'library'
 

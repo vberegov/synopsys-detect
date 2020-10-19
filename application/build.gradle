@@ -1,0 +1,56 @@
+buildscript {
+
+    apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle', to: buildscript
+    apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
+
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            def jarName = createArtifactName()
+            artifact(jarName)
+        }
+    }
+}
+
+artifactory {
+    publish {
+        defaults { publications('mavenJava') }
+    }
+}
+
+dependencies {
+    implementation project(':common')
+    implementation project(':configuration')
+    implementation project(':detectable')
+    implementation project(':detector')
+    implementation project(':polaris')
+
+    implementation 'ch.qos.logback:logback-classic:1.2.3'
+
+    implementation 'com.esotericsoftware.yamlbeans:yamlbeans:1.11'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.8'
+    implementation "com.synopsys.integration:blackduck-common:${blackDuckCommonVersion}"
+    implementation 'com.synopsys:method-analyzer-core:0.1.0'
+
+    implementation 'org.apache.maven.shared:maven-invoker:3.0.0'
+    implementation "org.springframework.boot:spring-boot"
+    implementation 'org.yaml:snakeyaml:1.24'
+    implementation 'org.zeroturnaround:zt-zip:1.13'
+    implementation 'org.freemarker:freemarker:2.3.26-incubating'
+
+    // spring-boot-starter-test *can* provide these, but we choose to be more explicit about the dependencies we ACTUALLY use
+    testImplementation 'org.assertj:assertj-core:3.13.2'
+    testImplementation 'org.skyscreamer:jsonassert:1.5.0'
+
+    testImplementation project(':configuration').sourceSets.test.output
+}
+
+springBoot { mainClassName = 'com.synopsys.integration.detect.Application' }
