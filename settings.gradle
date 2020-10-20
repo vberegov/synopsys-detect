@@ -7,4 +7,5 @@ include 'common'
 include 'polaris'
 include 'application'
 include 'library'
+include 'cli'
 

@@ -1,3 +1,7 @@
+import com.synopsys.integration.detect.artifactory.UpdateArtifactoryPropertiesTask
+import com.synopsys.integration.detect.battery.UpdateBatteryTask
+import com.synopsys.integration.detect.verification.VerifyBlackDuckDetectTask
+
 buildscript {
 
     apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle', to: buildscript
@@ -8,8 +12,21 @@ buildscript {
     }
 }
 
+apply plugin: 'com.synopsys.integration.solution'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+
+////////apply plugin: 'com.jfrog.artifactory'
+
+apply from: 'docs.gradle'
+
+/////////////////////////////
+// Common to all subprojects
+license {
+    header rootProject.file('LICENSE')
+}
+/////////////////////////////
+
 
 publishing {
     publications {
@@ -46,6 +63,17 @@ dependencies {
     implementation 'org.zeroturnaround:zt-zip:1.13'
     implementation 'org.freemarker:freemarker:2.3.26-incubating'
 
+
+    /////////////////////////////
+    // Common to all subprojects
+    //implementation "org.slf4j:slf4j-api:1.7.30"
+    implementation "org.apache.commons:commons-lang3:3.10" /* this could be managed by blackduck common */
+    implementation 'org.jetbrains:annotations:19.0.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
+    testImplementation 'org.mockito:mockito-core:2.+'
+    /////////////////////////////
+
     // spring-boot-starter-test *can* provide these, but we choose to be more explicit about the dependencies we ACTUALLY use
     testImplementation 'org.assertj:assertj-core:3.13.2'
     testImplementation 'org.skyscreamer:jsonassert:1.5.0'
@@ -54,3 +82,101 @@ dependencies {
 }
 
 springBoot { mainClassName = 'com.synopsys.integration.detect.Application' }
+
+tasks['testBattery'].doFirst {
+    def batteryPath = new File(createBatteryPath())
+    batteryPath.mkdirs()
+    environment 'BATTERY_TESTS_DETECT_JAR_PATH', createArtifactName()
+    environment 'BATTERY_TESTS_PATH', batteryPath.getCanonicalPath()
+    environment 'BATTERY_TESTS_JAVA_PATH', org.gradle.internal.jvm.Jvm.current().javaExecutable.getCanonicalPath()
+}
+
+task updateBattery(type: UpdateBatteryTask) {}
+task updateArtifactoryProperties(type: UpdateArtifactoryPropertiesTask) {
+    dependsOn ':cli:artifactoryDeploy'
+}
+
+task runDetect(type: JavaExec) {
+    dependsOn build
+
+    classpath = files(createArtifactName())
+    classpath += sourceSets.main.runtimeClasspath
+    main = 'com.synopsys.integration.detect.Application'
+    args = ['--detect.risk.report.pdf=true']
+}
+
+task verifyBlackDuckDetect(type: VerifyBlackDuckDetectTask) {
+    dependsOn runDetect
+    task verifyDetect() {
+        dependsOn verifyBlackDuckDetect
+    }
+}
+
+String parseAirGapZipPath(ByteArrayOutputStream standardOutput) {
+    String marker = 'Detect Air Gap Zip: '
+    String line = standardOutput.toString().split('\n').find { it.contains(marker) }
+    String path = line.substring(line.lastIndexOf(marker) + marker.length()).trim()
+    println "Found Air Gap Zip: ${path}"
+    return path
+}
+
+task createAirGapZip(type: JavaExec) {
+    dependsOn build
+
+    classpath = files(createArtifactName())
+    classpath += sourceSets.main.runtimeClasspath
+    main = 'com.synopsys.integration.detect.Application'
+    args = ["--detect.output.path=${buildDir}/libs/", '-z']
+    standardOutput = new ByteArrayOutputStream()
+    doLast {
+        createAirGapZip.ext.airGapPath = parseAirGapZipPath(standardOutput)
+    }
+}
+
+task publishAirGapZip() {
+    dependsOn createAirGapZip
+
+    doLast {
+        def airGapZipName = "${project.name}-${version}-air-gap.zip"
+        def airGapZipLocation = createAirGapZip.airGapPath
+        exec {
+            commandLine 'curl', '--insecure', '-u', "${project.ext.artifactoryDeployerUsername}:${project.ext.artifactoryDeployerPassword}", '-X', 'PUT',
+                    "${project.ext.deployArtifactoryUrl}/${project.ext.artifactoryRepo}/com/synopsys/integration/${project.name}/${version}/${airGapZipName}", '-T', "${airGapZipLocation}", '-f'
+        }
+    }
+}
+
+task createAirGapZipWithoutDocker(type: JavaExec) {
+    dependsOn build
+
+    classpath = files(createArtifactName())
+    classpath += sourceSets.main.runtimeClasspath
+    main = 'com.synopsys.integration.detect.Application'
+    args = ['--detect.gradle.path=gradlew', '-z', 'GRADLE,NUGET']
+    standardOutput = new ByteArrayOutputStream()
+    doLast {
+        createAirGapZipWithoutDocker.ext.airGapPath = parseAirGapZipPath(standardOutput)
+    }
+}
+
+task publishAirGapZipWithoutDocker() {
+    dependsOn createAirGapZipWithoutDocker
+
+    doLast {
+        def airGapZipName = "${project.name}-${version}-air-gap-gradle-nuget.zip"
+        def airGapZipLocation = createAirGapZipWithoutDocker.airGapPath
+        exec {
+            commandLine 'curl', '--insecure', '-u', "${project.ext.artifactoryDeployerUsername}:${project.ext.artifactoryDeployerPassword}", '-X', 'PUT',
+                    "${project.ext.deployArtifactoryUrl}/${project.ext.artifactoryRepo}/com/synopsys/integration/${project.name}/${version}/${airGapZipName}", '-T', "${airGapZipLocation}", '-f'
+        }
+    }
+}
+
+task signJar() {
+    dependsOn build
+    doLast {
+        exec {
+            commandLine 'jarsigner', '-tsa', 'http://timestamp.globalsign.com/scripts/timestamp.dll', '-storetype', 'pkcs12', '-storepass', "${jarSigningKeystorePassword}", '-keystore', "${jarSigningKeystorePath}", "${createArtifactName()}", "${jarSigningCertificateAlias}"
+        }
+    }
+}

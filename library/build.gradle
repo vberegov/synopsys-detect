@@ -6,7 +6,16 @@ plugins {
     id "com.jfrog.artifactory" //version "4.10.0"
 }
 
+apply plugin: 'com.synopsys.integration.simple'
 //apply plugin: 'io.spring.dependency-management'
+
+/////////////////////////////
+// Common to all subprojects
+license {
+    header rootProject.file('LICENSE')
+}
+/////////////////////////////
+
 
 repositories {
     jcenter()
@@ -86,6 +95,18 @@ dependencies {
     shadow 'org.apache.commons:commons-lang3:3.10'
 
     shadow 'org.apache.commons:commons-text:1.9'
+
+
+    /////////////////////////////
+    // Common to all subprojects
+    //implementation "org.slf4j:slf4j-api:1.7.30"
+    implementation "org.apache.commons:commons-lang3:3.10" /* this could be managed by blackduck common */
+    implementation 'org.jetbrains:annotations:19.0.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
+    testImplementation 'org.mockito:mockito-core:2.+'
+    /////////////////////////////
+
 }
 
 

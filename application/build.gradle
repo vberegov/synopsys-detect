@@ -8,8 +8,17 @@ buildscript {
     }
 }
 
+apply plugin: 'com.synopsys.integration.simple'
 //apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+
+/////////////////////////////
+// Common to all subprojects
+license {
+    header rootProject.file('LICENSE')
+}
+/////////////////////////////
+
 
 publishing {
     publications {
@@ -49,11 +58,25 @@ dependencies {
     implementation 'org.zeroturnaround:zt-zip:1.13'
     implementation 'org.freemarker:freemarker:2.3.26-incubating'
 
+
+    /////////////////////////////
+    // Common to all subprojects
+    //implementation "org.slf4j:slf4j-api:1.7.30"
+    implementation "org.apache.commons:commons-lang3:3.10" /* this could be managed by blackduck common */
+    implementation 'org.jetbrains:annotations:19.0.0'
+
+
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
+    testImplementation 'org.mockito:mockito-core:2.+'
+    /////////////////////////////
+
     // spring-boot-starter-test *can* provide these, but we choose to be more explicit about the dependencies we ACTUALLY use
     testImplementation 'org.assertj:assertj-core:3.13.2'
     testImplementation 'org.skyscreamer:jsonassert:1.5.0'
 
-    testImplementation project(':configuration').sourceSets.test.output
+    testImplementation project(':configuration')
+    //testImplementation project(':configuration').sourceSets.test.output
 }
 
 //springBoot { mainClassName = 'com.synopsys.integration.detect.Application' }

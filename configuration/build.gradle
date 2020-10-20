@@ -1,4 +1,23 @@
+buildscript {
+
+    apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle', to: buildscript
+    apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
+
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    }
+}
+
+apply plugin: 'com.synopsys.integration.simple'
 apply plugin: 'io.spring.dependency-management'
+
+/////////////////////////////
+// Common to all subprojects
+license {
+    header rootProject.file('LICENSE')
+}
+/////////////////////////////
+
 
 dependencyManagement {
     imports {
@@ -10,6 +29,17 @@ dependencies {
     implementation project(":common")
     implementation "org.springframework.boot:spring-boot"
     implementation "org.springframework:spring-core"
+
+
+    /////////////////////////////
+    // Common to all subprojects
+    //implementation "org.slf4j:slf4j-api:1.7.30"
+    implementation "org.apache.commons:commons-lang3:3.10" /* this could be managed by blackduck common */
+    implementation 'org.jetbrains:annotations:19.0.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
+    testImplementation 'org.mockito:mockito-core:2.+'
+    /////////////////////////////
 
     testImplementation "org.springframework:spring-test"
     testImplementation "org.apache.commons:commons-collections4:4.2"
