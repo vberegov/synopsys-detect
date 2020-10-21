@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,10 +35,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.synopsys.integration.common.util.Bds;
 import com.synopsys.integration.configuration.config.PropertyConfiguration;
 import com.synopsys.integration.configuration.property.Property;
 import com.synopsys.integration.configuration.property.types.path.SimplePathResolver;
-import com.synopsys.integration.configuration.util.ConfigTestUtils;
+import com.synopsys.integration.configuration.source.MapPropertySource;
 import com.synopsys.integration.detect.configuration.DetectConfigurationFactory;
 import com.synopsys.integration.detect.configuration.DetectProperties;
 import com.synopsys.integration.detectable.detectable.file.FileFinder;
@@ -66,7 +68,8 @@ public class FileExclusionTest {
     }
 
     private FileFinder fileFinderFromProperty(Property prop, String value) {
-        PropertyConfiguration propertyConfiguration = ConfigTestUtils.configOf(Pair.of(prop.getKey(), value));
+        MapPropertySource propSource = new MapPropertySource("map", Bds.mapOfEntries(Pair.of(prop.getKey(), value)));
+        PropertyConfiguration propertyConfiguration = new PropertyConfiguration(Arrays.asList(propSource));
         DetectConfigurationFactory detectConfigurationFactory = new DetectConfigurationFactory(propertyConfiguration, new SimplePathResolver());
         return detectConfigurationFactory.createFilteredFileFinder(sourcePath);
     }
