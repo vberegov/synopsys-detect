@@ -1,3 +1,4 @@
+import com.synopsys.integration.detect.airgap.CreateAirGapZipTaskMine
 import com.synopsys.integration.detect.artifactory.UpdateArtifactoryPropertiesTask
 import com.synopsys.integration.detect.battery.UpdateBatteryTask
 import com.synopsys.integration.detect.verification.VerifyBlackDuckDetectTask
@@ -159,6 +160,25 @@ task createAirGapZip(type: JavaExec) {
     doLast {
         createAirGapZip.ext.airGapPath = parseAirGapZipPath(standardOutput)
     }
+}
+task createAirGapZipMine(type: CreateAirGapZipTaskMine) {
+    dependsOn build
+    // NEED TO FIGURE OUT HOW TO DO THIS IN THE JAVA CODE
+    //classpath = sourceSets.main.runtimeClasspath
+
+    //classpath = files(createArtifactName())
+    //    classpath += sourceSets.main.runtimeClasspath
+    //args = ["--detect.output.path=${buildDir}/libs/", '-z']
+
+    println("==== createAirGapZipMine task")
+    //    classpath = files(createArtifactName())
+    //    classpath += sourceSets.main.runtimeClasspath
+    //    main = 'com.synopsys.integration.detect.Application'
+    //    args = ["--detect.output.path=${buildDir}/libs/", '-z']
+    //    standardOutput = new ByteArrayOutputStream()
+    //    doLast {
+    //        createAirGapZip.ext.airGapPath = parseAirGapZipPath(standardOutput)
+    //    }
 }
 
 task publishAirGapZip() {
