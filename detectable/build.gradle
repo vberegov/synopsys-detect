@@ -5,7 +5,10 @@ dependencies {
 
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.5'
     implementation 'org.tomlj:tomlj:1.0.0'
-    implementation 'org.codehaus.groovy:groovy-astbuilder:3.0.6'
+
+    // TODO upgrading this from 3.0.6 to 3.0.7 didn't work; groovy overridden to old version for some reason. Fails at runtime
+    implementation 'org.codehaus.groovy:groovy-astbuilder:3.0.7'
+
     implementation 'com.moandjiezana.toml:toml4j:0.7.1'
     implementation 'com.paypal.digraph:digraph-parser:1.0'
     implementation 'org.freemarker:freemarker:2.3.26-incubating'

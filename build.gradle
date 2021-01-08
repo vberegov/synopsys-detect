@@ -9,8 +9,15 @@ buildscript {
         junitPlatformDefaultTestTags = 'integration, performance, battery'
     }
 
+    // TODO temp, to pick up locally-built common gradle plugin, which has classpath and name changes for license plugin 0.15.0
+    // (Migrating to license plugin 15 requires more than just a version change)
+    repositories {
+        mavenLocal()
+    }
+
     apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle', to: buildscript
-    apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
+    // TODO: temp, to pick up locally-built common gradle plugin, which uses license plugin 0.15.0
+    apply from: 'buildscript-dependencies.gradle', to: buildscript
 
     dependencies {
         classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
