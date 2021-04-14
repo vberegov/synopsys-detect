@@ -10,6 +10,7 @@ package com.synopsys.integration.detectable.detectables.sbt.dot;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 
@@ -49,12 +50,13 @@ public class SbtDotExtractor {
         try {
             Executable dotExecutable = ExecutableUtils.createFromTarget(directory, sbt, SbtDotExtractor.SBT_ARG_TO_ENABLE_BACKGROUND_EXECUTION, "dependencyDot");
             ExecutableOutput dotOutput = executableRunner.executeSuccessfully(dotExecutable);
+            Optional<String> dotOutputProjectName = sbtDotOutputParser.parseProjectName(dotOutput.getStandardOutputAsList());
             List<File> dotGraphs = sbtDotOutputParser.parseGeneratedGraphFiles(dotOutput.getStandardOutputAsList());
 
             Extraction.Builder extraction = new Extraction.Builder();
             for (File dotGraph : dotGraphs) {
                 GraphParser graphParser = new GraphParser(FileUtils.openInputStream(dotGraph));
-                String projectId = sbtProjectMatcher.determineProjectNodeID(graphParser);
+                String projectId = sbtProjectMatcher.determineProjectNodeID(graphParser, dotOutputProjectName.orElse(null));
                 DependencyGraph graph = sbtGraphParserTransformer.transformDotToGraph(graphParser, projectId);
                 Dependency projectDependency = graphNodeParser.nodeToDependency(projectId);
 
