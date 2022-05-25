@@ -1,11 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "hash": "2c603462ebf98a34ef9ced563c3fe634",
-    "content-hash": "21216a1844db36a507f398fdca4b91bf",
+    "content-hash": "fe25dc3072f3eac41442cf8f978d3ba4",
     "packages": [
         {
             "name": "pear/archive_tar",
@@ -55,7 +54,7 @@
                 "archive",
                 "tar"
             ],
-            "time": "2013-02-09 11:44:32"
+            "time": "2013-02-09T11:44:32+00:00"
         },
         {
             "name": "pear/console_getopt",
@@ -102,7 +101,7 @@
                 }
             ],
             "description": "More info available on: http://pear.php.net/package/Console_Getopt",
-            "time": "2015-07-20 20:28:12"
+            "time": "2015-07-20T20:28:12+00:00"
         },
         {
             "name": "pear/mail",
@@ -158,7 +157,7 @@
                 }
             ],
             "description": "More info available on: http://pear.php.net/package/Mail",
-            "time": "2014-03-22 08:39:12"
+            "time": "2014-03-22T08:39:12+00:00"
         },
         {
             "name": "pear/mail_mime",
@@ -204,7 +203,7 @@
             ],
             "description": "Mail_Mime provides classes to create MIME messages",
             "homepage": "http://pear.php.net/package/Mail_Mime",
-            "time": "2015-09-13 12:42:41"
+            "time": "2015-09-13T12:42:41+00:00"
         },
         {
             "name": "pear/pear",
@@ -296,7 +295,7 @@
                 }
             ],
             "description": "This is the definitive source of PEAR's core files.",
-            "time": "2014-08-25 01:38:48"
+            "time": "2014-08-25T01:38:48+00:00"
         },
         {
             "name": "pear/pear-core-minimal",
@@ -340,7 +339,7 @@
                 }
             ],
             "description": "Minimal set of PEAR core files to be used as composer dependency",
-            "time": "2015-10-17 14:12:29"
+            "time": "2015-10-17T14:12:29+00:00"
         },
         {
             "name": "pear/pear_exception",
@@ -395,7 +394,7 @@
             "keywords": [
                 "exception"
             ],
-            "time": "2015-02-10 20:07:52"
+            "time": "2015-02-10T20:07:52+00:00"
         },
         {
             "name": "pear/structures_graph",
@@ -432,7 +431,7 @@
                 }
             ],
             "description": "More info available on: http://pear.php.net/package/Structures_Graph",
-            "time": "2015-07-20 20:05:12"
+            "time": "2015-07-20T20:05:12+00:00"
         },
         {
             "name": "pear/xml_util",
@@ -485,24 +484,28 @@
                 }
             ],
             "description": "More info available on: http://pear.php.net/package/XML_Util",
-            "time": "2014-06-07 10:17:22"
+            "time": "2014-06-07T10:17:22+00:00"
         },
         {
             "name": "smarty/smarty",
-            "version": "v3.1.31",
+            "version": "v3.1.45",
             "source": {
                 "type": "git",
                 "url": "https://github.com/smarty-php/smarty.git",
-                "reference": "c7d42e4a327c402897dd587871434888fde1e7a9"
+                "reference": "a2713ab89e6d773bc4819f11857af7f6b2e353a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/smarty-php/smarty/zipball/c7d42e4a327c402897dd587871434888fde1e7a9",
-                "reference": "c7d42e4a327c402897dd587871434888fde1e7a9",
+                "url": "https://api.github.com/repos/smarty-php/smarty/zipball/a2713ab89e6d773bc4819f11857af7f6b2e353a9",
+                "reference": "a2713ab89e6d773bc4819f11857af7f6b2e353a9",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^7.5 || ^6.5 || ^5.7 || ^4.8",
+                "smarty/smarty-lexer": "^3.1"
             },
             "type": "library",
             "extra": {
@@ -511,8 +514,8 @@
                 }
             },
             "autoload": {
-                "files": [
-                    "libs/bootstrap.php"
+                "classmap": [
+                    "libs/"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -538,7 +541,13 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2016-12-14 21:57:25"
+            "support": {
+                "forum": "http://www.smarty.net/forums/",
+                "irc": "irc://irc.freenode.org/smarty",
+                "issues": "https://github.com/smarty-php/smarty/issues",
+                "source": "https://github.com/smarty-php/smarty/tree/v3.1.45"
+            },
+            "time": "2022-05-17T12:57:52+00:00"
         }
     ],
     "packages-dev": [],
@@ -552,5 +561,6 @@
     "platform": {
         "php": ">=7.0.0"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }
