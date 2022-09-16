@@ -1,7 +1,7 @@
 {
     "require": {
         "php": ">=7.0.0",
-        "smarty/smarty": "3.1.31",
+        "smarty/smarty": "3.1.47",
         "pear/mail_mime": "1.10.0",
 				"pear/mail": "dev-trunk"
     },
